@@ -40,8 +40,8 @@ screenshots/
 mcp-add-command.txt
 docs/why-notebooklm.md
 
-# Version update script (run manually before publishing)
-scripts/update-version.cjs
+# Publishing scripts and documentation (local use only)
+publish/
 
 # Python (from old version)
 __pycache__/
