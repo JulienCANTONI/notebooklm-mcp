@@ -262,9 +262,9 @@ By contributing, you agree that your contributions will be licensed under the [M
 
 ## Questions?
 
-- Open a [GitHub Discussion](https://github.com/YOUR-REPO/discussions)
+- Open a [GitHub Discussion](https://github.com/roomi-fields/notebooklm-mcp-http/discussions)
 - Consult the [documentation](./deployment/docs/)
-- Read [existing issues](https://github.com/YOUR-REPO/issues)
+- Read [existing issues](https://github.com/roomi-fields/notebooklm-mcp-http/issues)
 
 ---
 

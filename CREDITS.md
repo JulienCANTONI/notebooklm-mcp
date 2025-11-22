@@ -201,8 +201,8 @@ See [LICENSE](./LICENSE) for complete details.
 
 ## Contact & Contributions
 
-- **Issues:** [GitHub Issues](https://github.com/YOUR-REPO/issues)
-- **Discussions:** [GitHub Discussions](https://github.com/YOUR-REPO/discussions)
+- **Issues:** [GitHub Issues](https://github.com/roomi-fields/notebooklm-mcp-http/issues)
+- **Discussions:** [GitHub Discussions](https://github.com/roomi-fields/notebooklm-mcp-http/discussions)
 - **Contributions:** See [CONTRIBUTING.md](./CONTRIBUTING.md)
 
 ---

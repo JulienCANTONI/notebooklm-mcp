@@ -1,7 +1,7 @@
 {
-  "name": "notebooklm-mcp",
+  "name": "@roomi-fields/notebooklm-mcp",
   "version": "1.1.2",
-  "description": "MCP server for NotebookLM API with session support and human-like behavior",
+  "description": "MCP server for NotebookLM API with HTTP REST API - Zero hallucinations from your notebooks",
   "type": "module",
   "bin": {
     "notebooklm-mcp": "dist/index.js"
@@ -21,9 +21,17 @@
     "notebooklm",
     "gemini",
     "ai",
-    "claude"
+    "claude",
+    "n8n",
+    "automation",
+    "rest-api",
+    "http-server",
+    "workflow"
   ],
-  "author": "Gérôme Dexheimer <hello@geromedexheimer.de> (https://github.com/PleasePrompto)",
+  "author": "Romain Peyrichou (https://github.com/roomi-fields)",
+  "contributors": [
+    "Gérôme Dexheimer <hello@geromedexheimer.de> (https://github.com/PleasePrompto)"
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",

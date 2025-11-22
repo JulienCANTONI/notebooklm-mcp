@@ -148,7 +148,7 @@
 
 Found an error in the documentation? An unclear section?
 
-**Open an issue:** [To be configured when repository is published]
+**Open an issue:** [GitHub Issues](https://github.com/roomi-fields/notebooklm-mcp-http/issues)
 
 Or directly propose a PR to improve the documentation!
 

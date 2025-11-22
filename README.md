@@ -6,9 +6,8 @@
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue.svg)](https://www.typescriptlang.org/)
 [![MCP](https://img.shields.io/badge/MCP-2025-green.svg)](https://modelcontextprotocol.io/)
-[![npm](https://img.shields.io/npm/v/notebooklm-mcp.svg)](https://www.npmjs.com/package/notebooklm-mcp)
-[![Claude Code Skill](https://img.shields.io/badge/Claude%20Code-Skill-purple.svg)](https://github.com/PleasePrompto/notebooklm-skill)
-[![GitHub](https://img.shields.io/github/stars/PleasePrompto/notebooklm-mcp?style=social)](https://github.com/PleasePrompto/notebooklm-mcp)
+[![npm](https://img.shields.io/npm/v/@roomi-fields/notebooklm-mcp.svg)](https://www.npmjs.com/package/@roomi-fields/notebooklm-mcp)
+[![GitHub](https://img.shields.io/github/stars/roomi-fields/notebooklm-mcp-http?style=social)](https://github.com/roomi-fields/notebooklm-mcp-http)
 
 [MCP Installation](#mcp-installation) • [HTTP REST API](#http-rest-api) • [Why NotebookLM](#why-notebooklm-not-local-rag) • [Examples](#real-world-example) • [Documentation](./deployment/docs/)
 
@@ -50,17 +49,17 @@ Use NotebookLM directly from your AI coding assistant:
 
 ```bash
 # Claude Code
-claude mcp add notebooklm npx notebooklm-mcp@latest
+claude mcp add notebooklm npx @roomi-fields/notebooklm-mcp@latest
 
 # Codex
-codex mcp add notebooklm -- npx notebooklm-mcp@latest
+codex mcp add notebooklm -- npx @roomi-fields/notebooklm-mcp@latest
 
 # Cursor (add to ~/.cursor/mcp.json)
 {
   "mcpServers": {
     "notebooklm": {
       "command": "npx",
-      "args": ["-y", "notebooklm-mcp@latest"]
+      "args": ["-y", "@roomi-fields/notebooklm-mcp@latest"]
     }
   }
 }
@@ -208,7 +207,7 @@ Perfect for n8n workflows:
 <summary>Claude Code</summary>
 
 ```bash
-claude mcp add notebooklm npx notebooklm-mcp@latest
+claude mcp add notebooklm npx @roomi-fields/notebooklm-mcp@latest
 ```
 </details>
 
@@ -216,7 +215,7 @@ claude mcp add notebooklm npx notebooklm-mcp@latest
 <summary>Codex</summary>
 
 ```bash
-codex mcp add notebooklm -- npx notebooklm-mcp@latest
+codex mcp add notebooklm -- npx @roomi-fields/notebooklm-mcp@latest
 ```
 </details>
 
@@ -224,7 +223,7 @@ codex mcp add notebooklm -- npx notebooklm-mcp@latest
 <summary>Gemini</summary>
 
 ```bash
-gemini mcp add notebooklm npx notebooklm-mcp@latest
+gemini mcp add notebooklm npx @roomi-fields/notebooklm-mcp@latest
 ```
 </details>
 
@@ -237,7 +236,7 @@ Add to `~/.cursor/mcp.json`:
   "mcpServers": {
     "notebooklm": {
       "command": "npx",
-      "args": ["-y", "notebooklm-mcp@latest"]
+      "args": ["-y", "@roomi-fields/notebooklm-mcp@latest"]
     }
   }
 }
@@ -248,7 +247,7 @@ Add to `~/.cursor/mcp.json`:
 <summary>amp</summary>
 
 ```bash
-amp mcp add notebooklm -- npx notebooklm-mcp@latest
+amp mcp add notebooklm -- npx @roomi-fields/notebooklm-mcp@latest
 ```
 </details>
 
@@ -256,7 +255,7 @@ amp mcp add notebooklm -- npx notebooklm-mcp@latest
 <summary>VS Code</summary>
 
 ```bash
-code --add-mcp '{"name":"notebooklm","command":"npx","args":["notebooklm-mcp@latest"]}'
+code --add-mcp '{"name":"notebooklm","command":"npx","args":["@roomi-fields/notebooklm-mcp@latest"]}'
 ```
 </details>
 
@@ -269,7 +268,7 @@ code --add-mcp '{"name":"notebooklm","command":"npx","args":["notebooklm-mcp@lat
   "mcpServers": {
     "notebooklm": {
       "command": "npx",
-      "args": ["notebooklm-mcp@latest"]
+      "args": ["@roomi-fields/notebooklm-mcp@latest"]
     }
   }
 }
@@ -312,7 +311,7 @@ Share: **⚙️ Share → Anyone with link → Copy**
 
 **Prefer Claude Code Skills over MCP?** This server is now also available as a native Claude Code Skill with a simpler setup:
 
-**[NotebookLM Claude Code Skill](https://github.com/PleasePrompto/notebooklm-skill)** - Clone to `~/.claude/skills` and start using immediately
+**NotebookLM Claude Code Skill** - Available separately for advanced Claude Code workflows
 
 **Key differences:**
 - **MCP Server** (this repo): Persistent sessions, works with Claude Code, Codex, Cursor, and other MCP clients
@@ -486,9 +485,49 @@ That said, if you run into problems or have questions, feel free to open an issu
 
 ---
 
+## Roadmap
+
+Future features planned for upcoming releases:
+
+### 🚀 Stateless Server Mode
+**Goal**: Run the HTTP server without keeping a terminal window open permanently.
+
+**Planned options:**
+- **PM2 integration** (Recommended): Cross-platform process manager with auto-restart, monitoring, and logs
+  - Simple setup: `pm2 start npm --name "notebooklm-http" -- run start:http`
+  - Automatic startup on system boot
+  - Built-in log rotation and monitoring
+- **Windows Service**: Native Windows service installation via `nssm` or `node-windows`
+- **Serverless-ready mode**: Lambda/cold-start compatible with lazy browser session initialization
+
+**Status**: Planned for v1.2.0
+
+### 🤖 Auto-fill Notebook Metadata
+**Goal**: Automatically generate notebook name, description, and keywords when adding a notebook.
+
+**How it works:**
+1. When adding a notebook with empty metadata, automatically ask NotebookLM:
+   - "If you had to name this notebook in one word, what would it be?"
+   - "Give me 10 relevant keywords for this content"
+   - "Describe this notebook in one sentence"
+2. Parse the response and auto-populate metadata fields
+3. Available as both automatic mode (on add) and manual command (`/notebooks/:id/auto-fill`)
+
+**Benefits:**
+- No more manual metadata entry
+- Consistent, AI-generated descriptions
+- Better notebook organization and searchability
+
+**Status**: Planned for v1.2.0 or v1.3.0
+
+### 💡 Have an idea?
+[Open a discussion](https://github.com/roomi-fields/notebooklm-mcp-http/discussions) to suggest new features!
+
+---
+
 ## Contributing
 
-Found a bug? Have a feature idea? [Open an issue](https://github.com/PleasePrompto/notebooklm-mcp/issues) or submit a PR!
+Found a bug? Have a feature idea? [Open an issue](https://github.com/roomi-fields/notebooklm-mcp-http/issues) or submit a PR!
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for contribution guidelines.
 
@@ -504,6 +543,6 @@ See [LICENSE](./LICENSE) for details.
 
 Built with frustration about hallucinated APIs, powered by Google's NotebookLM
 
-⭐ [Star on GitHub](https://github.com/PleasePrompto/notebooklm-mcp) if this saves you debugging time!
+⭐ [Star on GitHub](https://github.com/roomi-fields/notebooklm-mcp-http) if this saves you debugging time!
 
 </div>
