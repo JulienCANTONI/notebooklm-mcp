@@ -12,6 +12,12 @@
     "dev": "tsx watch src/index.ts",
     "dev:http": "tsx watch src/http-wrapper.ts",
     "start:http": "node dist/http-wrapper.js",
+    "daemon:start": "pm2 start ecosystem.config.cjs",
+    "daemon:stop": "pm2 stop notebooklm-http",
+    "daemon:restart": "pm2 restart notebooklm-http",
+    "daemon:logs": "pm2 logs notebooklm-http",
+    "daemon:status": "pm2 status",
+    "daemon:delete": "pm2 delete notebooklm-http",
     "setup-auth": "node dist/index.js",
     "prepare": "npm run build",
     "test": "tsx src/index.ts"
@@ -62,6 +68,7 @@
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
     "@types/node": "^20.11.0",
+    "pm2": "^5.4.2",
     "tsx": "^4.7.0",
     "typescript": "^5.3.3"
   },

@@ -144,9 +144,18 @@ npm run build
 npm run setup-auth
 # Chrome opens → log in with Google → close Chrome
 
-# 3. Add your first notebook
+# 3. Start the server
+
+# Option A: Foreground mode (terminal stays open)
 npm run start:http
-# In another terminal:
+
+# Option B: Background daemon mode (recommended for production)
+npm run daemon:start    # Start in background
+npm run daemon:logs     # View logs
+npm run daemon:status   # Check status
+npm run daemon:stop     # Stop server
+
+# 4. Add your first notebook (in another terminal if using Option A)
 curl -X POST http://localhost:3000/notebooks \
   -H "Content-Type: application/json" \
   -d '{
@@ -156,12 +165,12 @@ curl -X POST http://localhost:3000/notebooks \
     "topics": ["docs", "api"]
   }'
 
-# 4. Query NotebookLM
+# 5. Query NotebookLM
 curl -X POST http://localhost:3000/ask \
   -H "Content-Type: application/json" \
   -d '{"question": "Explain X"}'
 
-# 5. Validate installation (optional)
+# 6. Validate installation (optional)
 .\deployment\scripts\test-server.ps1
 ```
 
@@ -207,6 +216,39 @@ Perfect for n8n workflows:
 ```
 
 **👉 n8n guide:** [deployment/docs/04-N8N-INTEGRATION.md](./deployment/docs/04-N8N-INTEGRATION.md)
+
+### Background Daemon Mode
+
+Run the HTTP server as a background process without keeping a terminal window open:
+
+```bash
+# Start server in background
+npm run daemon:start
+
+# View real-time logs
+npm run daemon:logs
+
+# Check server status
+npm run daemon:status
+
+# Restart server
+npm run daemon:restart
+
+# Stop server
+npm run daemon:stop
+
+# Remove from PM2 process list
+npm run daemon:delete
+```
+
+**Features:**
+- ✅ Runs in background without terminal window
+- ✅ Auto-restart on crash
+- ✅ Centralized log management (logs/pm2-*.log)
+- ✅ Memory limit protection (1GB max)
+- ✅ Production-ready process management
+
+**Configuration:** Edit `ecosystem.config.cjs` to customize PM2 behavior (env vars, restart policy, etc.)
 
 ### Installation & Documentation
 
