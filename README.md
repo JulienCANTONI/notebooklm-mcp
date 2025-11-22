@@ -21,13 +21,31 @@
 
 Use NotebookLM from **any tool** via HTTP REST API:
 
+**Option A: Install from npm**
 ```bash
-# Install and start HTTP server
+# Install globally
+npm install -g @roomi-fields/notebooklm-mcp
+
+# For MCP stdio mode (Claude Code, Cursor)
+notebooklm-mcp
+
+# For HTTP server mode
+# Note: Currently requires cloning the repo for HTTP mode
+# See Option B below
+```
+
+**Option B: Install from source (Required for HTTP mode)**
+```bash
+# Clone and install
+git clone https://github.com/roomi-fields/notebooklm-mcp-http.git
+cd notebooklm-mcp-http
 npm install
 npm run build
 npm run start:http
+```
 
-# Query NotebookLM via REST
+**Query the API:**
+```bash
 curl -X POST http://localhost:3000/ask \
   -H "Content-Type: application/json" \
   -d '{"question": "Explain X", "notebook_id": "my-notebook"}'
