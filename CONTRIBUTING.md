@@ -65,8 +65,8 @@ Before creating an issue:
 # 1. Fork the project on GitHub
 
 # 2. Clone your fork
-git clone https://github.com/YOUR-USERNAME/notebooklm-mcp-http.git
-cd notebooklm-mcp-http
+git clone https://github.com/YOUR-USERNAME/notebooklm-mcp.git
+cd notebooklm-mcp
 
 # 3. Create a branch for your feature
 git checkout -b feature/my-new-feature
@@ -187,7 +187,7 @@ curl -X POST http://localhost:3000/ask \
 ## Project Structure
 
 ```
-notebooklm-mcp-http/
+notebooklm-mcp/
 ├── src/
 │   ├── http-wrapper.ts       # HTTP REST API entry point
 │   ├── index.ts              # MCP stdio entry point
@@ -262,9 +262,9 @@ By contributing, you agree that your contributions will be licensed under the [M
 
 ## Questions?
 
-- Open a [GitHub Discussion](https://github.com/roomi-fields/notebooklm-mcp-http/discussions)
+- Open a [GitHub Discussion](https://github.com/roomi-fields/notebooklm-mcp/discussions)
 - Consult the [documentation](./deployment/docs/)
-- Read [existing issues](https://github.com/roomi-fields/notebooklm-mcp-http/issues)
+- Read [existing issues](https://github.com/roomi-fields/notebooklm-mcp/issues)
 
 ---
 

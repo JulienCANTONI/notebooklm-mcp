@@ -7,7 +7,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue.svg)](https://www.typescriptlang.org/)
 [![MCP](https://img.shields.io/badge/MCP-2025-green.svg)](https://modelcontextprotocol.io/)
 [![npm](https://img.shields.io/npm/v/@roomi-fields/notebooklm-mcp.svg)](https://www.npmjs.com/package/@roomi-fields/notebooklm-mcp)
-[![GitHub](https://img.shields.io/github/stars/roomi-fields/notebooklm-mcp-http?style=social)](https://github.com/roomi-fields/notebooklm-mcp-http)
+[![GitHub](https://img.shields.io/github/stars/roomi-fields/notebooklm-mcp?style=social)](https://github.com/roomi-fields/notebooklm-mcp)
 
 [MCP Installation](#mcp-installation) • [HTTP REST API](#http-rest-api) • [Why NotebookLM](#why-notebooklm-not-local-rag) • [Examples](#real-world-example) • [Documentation](./deployment/docs/)
 
@@ -37,8 +37,8 @@ notebooklm-mcp
 **Option B: Install from source (Required for HTTP mode)**
 ```bash
 # Clone and install
-git clone https://github.com/roomi-fields/notebooklm-mcp-http.git
-cd notebooklm-mcp-http
+git clone https://github.com/roomi-fields/notebooklm-mcp.git
+cd notebooklm-mcp
 npm install
 npm run build
 npm run start:http
@@ -539,13 +539,13 @@ Future features planned for upcoming releases:
 **Status**: Planned for v1.2.0 or v1.3.0
 
 ### 💡 Have an idea?
-[Open a discussion](https://github.com/roomi-fields/notebooklm-mcp-http/discussions) to suggest new features!
+[Open a discussion](https://github.com/roomi-fields/notebooklm-mcp/discussions) to suggest new features!
 
 ---
 
 ## Contributing
 
-Found a bug? Have a feature idea? [Open an issue](https://github.com/roomi-fields/notebooklm-mcp-http/issues) or submit a PR!
+Found a bug? Have a feature idea? [Open an issue](https://github.com/roomi-fields/notebooklm-mcp/issues) or submit a PR!
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for contribution guidelines.
 
@@ -561,6 +561,6 @@ See [LICENSE](./LICENSE) for details.
 
 Built with frustration about hallucinated APIs, powered by Google's NotebookLM
 
-⭐ [Star on GitHub](https://github.com/roomi-fields/notebooklm-mcp-http) if this saves you debugging time!
+⭐ [Star on GitHub](https://github.com/roomi-fields/notebooklm-mcp) if this saves you debugging time!
 
 </div>

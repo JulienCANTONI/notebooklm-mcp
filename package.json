@@ -35,11 +35,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/roomi-fields/notebooklm-mcp-http.git"
+    "url": "git+https://github.com/roomi-fields/notebooklm-mcp.git"
   },
-  "homepage": "https://github.com/roomi-fields/notebooklm-mcp-http#readme",
+  "homepage": "https://github.com/roomi-fields/notebooklm-mcp#readme",
   "bugs": {
-    "url": "https://github.com/roomi-fields/notebooklm-mcp-http/issues"
+    "url": "https://github.com/roomi-fields/notebooklm-mcp/issues"
   },
   "files": [
     "dist",
