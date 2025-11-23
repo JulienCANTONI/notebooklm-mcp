@@ -119,9 +119,9 @@ Analyze your complete content and respond ONLY in JSON format:
 - **Rate limit preservation**: 1 query per notebook add (vs N queries per research)
 
 ### For Product
-- **Unique feature**: Only NotebookLM MCP with auto-discovery
-- **Better UX**: Frictionless notebook management
-- **Competitive advantage**: Clear differentiator vs other implementations
+- **Enhanced experience**: Auto-discovery enables frictionless notebook management
+- **Scalable architecture**: Handles growing documentation libraries efficiently
+- **Progressive disclosure**: Optimizes API usage and response times
 
 ## Comparison with Claude Skills
 

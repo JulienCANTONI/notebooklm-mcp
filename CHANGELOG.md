@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.3.0] - 2025-01-23
+
+### Added
+
+**Auto-Discovery Feature:**
+- New endpoint `POST /notebooks/auto-discover` for autonomous resource discovery
+- Automatic metadata generation by querying NotebookLM itself
+- Progressive disclosure pattern inspired by Claude Skills best practices
+- Validation of auto-generated metadata (kebab-case names, description length, tags count)
+- Retry logic for metadata generation (max 2 attempts with 2s delay)
+- New field `auto_generated: boolean` in Notebook schema
+- Complete documentation in `deployment/docs/07-AUTO-DISCOVERY.md`
+
+**Key Benefits:**
+- Autonomous resource discovery: Orchestrators can find relevant documentation without manual intervention
+- Zero-friction notebook addition (30 seconds vs 5 minutes manual setup)
+- Self-organizing documentation library
+- Progressive disclosure pattern optimizes token usage and API rate limits
+
+### Changed
+
+**Documentation:**
+- Updated API documentation with auto-discovery endpoint details
+- Added progressive disclosure pattern explanation
+- Enhanced README with auto-discovery feature showcase
+- Version bumped to 1.3.0 across all package files
+
+---
+
 ## [1.1.2-http] - 2025-01-21
 
 ### Added

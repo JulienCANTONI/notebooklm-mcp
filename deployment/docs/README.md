@@ -22,6 +22,7 @@
 | [**04-N8N-INTEGRATION.md**](./04-N8N-INTEGRATION.md) | Integration guide with n8n | n8n users |
 | [**05-TROUBLESHOOTING.md**](./05-TROUBLESHOOTING.md) | Solutions to common problems | Debugging, errors |
 | [**06-NOTEBOOK-LIBRARY.md**](./06-NOTEBOOK-LIBRARY.md) | Multi-notebook library management | Notebook management |
+| [**07-AUTO-DISCOVERY.md**](./07-AUTO-DISCOVERY.md) | Autonomous resource discovery pattern | Auto-discovery feature |
 | [**Test Scripts**](../scripts/README.md) | PowerShell validation scripts | Testing, CI/CD |
 
 ---
@@ -68,6 +69,7 @@
 | `/ask` | POST | Ask a question to NotebookLM |
 | `/notebooks` | GET | List notebooks |
 | `/notebooks` | POST | Add a notebook (with validation) |
+| `/notebooks/auto-discover` | POST | Auto-generate notebook metadata |
 | `/notebooks/:id` | DELETE | Delete a notebook |
 | `/notebooks/:id/activate` | PUT | Activate a notebook |
 
@@ -127,6 +129,20 @@
 
 ## 🔄 Changelog
 
+### v1.3.0 (2025-01-23)
+
+**New features:**
+- ✅ Auto-Discovery: Autonomous resource discovery pattern
+- ✅ POST `/notebooks/auto-discover` endpoint for automatic metadata generation
+- ✅ Progressive disclosure inspired by Claude Skills best practices
+- ✅ Validation of auto-generated metadata (kebab-case, description length, tags)
+- ✅ Orchestrators can discover documentation without manual configuration
+
+**Documentation:**
+- ✅ New guide [07-AUTO-DISCOVERY.md](./07-AUTO-DISCOVERY.md)
+- ✅ Enhanced API documentation with auto-discovery endpoint
+- ✅ Updated CHANGELOG with feature details
+
 ### v1.1.2 (2025-11-22)
 
 **New features:**
@@ -158,5 +174,5 @@ Or directly propose a PR to improve the documentation!
 
 ---
 
-**Documentation updated:** 2025-11-22
-**Version:** 1.2.1
+**Documentation updated:** 2025-01-23
+**Version:** 1.3.0

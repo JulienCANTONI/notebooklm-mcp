@@ -20,7 +20,7 @@
     Run tests on a different port
 
 .NOTES
-    Version: 1.1.2
+    Version: 1.3.0
     Prerequisites: The server must be started
 #>
 

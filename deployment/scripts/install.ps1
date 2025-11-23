@@ -1,5 +1,5 @@
 # Automatic installation script - NotebookLM MCP HTTP Server
-# Version: 1.1.2
+# Version: 1.3.0
 # Description: Installs all dependencies and compiles the project
 
 Write-Host "╔══════════════════════════════════════════════════════════╗" -ForegroundColor Cyan

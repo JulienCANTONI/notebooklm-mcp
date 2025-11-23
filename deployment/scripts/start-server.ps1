@@ -1,5 +1,5 @@
 # Startup script - NotebookLM MCP HTTP Server
-# Version: 1.1.2
+# Version: 1.3.0
 
 Write-Host "╔══════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
 Write-Host "║  NotebookLM MCP - HTTP Server Startup                    ║" -ForegroundColor Cyan

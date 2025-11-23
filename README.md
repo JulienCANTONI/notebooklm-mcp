@@ -186,6 +186,7 @@ curl -X POST http://localhost:3000/ask \
 | `POST` | `/ask` | Ask a question to NotebookLM |
 | `GET` | `/notebooks` | List all notebooks |
 | `POST` | `/notebooks` | Add notebook (with live validation) |
+| `POST` | `/notebooks/auto-discover` | Auto-generate notebook metadata |
 | `DELETE` | `/notebooks/:id` | Remove a notebook |
 | `PUT` | `/notebooks/:id/activate` | Set active notebook |
 | `GET` | `/sessions` | List active sessions |
@@ -223,7 +224,7 @@ Perfect for n8n workflows:
 
 ## 🔍 Auto-Discovery : Self-Organizing Documentation
 
-NotebookLM MCP is the **only MCP server** with autonomous resource discovery.
+Autonomous resource discovery enables AI orchestrators to find and use relevant documentation without manual intervention.
 
 ### How it works
 
@@ -633,38 +634,44 @@ That said, if you run into problems or have questions, feel free to open an issu
 
 ## Roadmap
 
-Future features planned for upcoming releases:
+### ✅ Implemented in v1.3.0
 
-### 🚀 Stateless Server Mode
-**Goal**: Run the HTTP server without keeping a terminal window open permanently.
+**🤖 Auto-Discovery: Autonomous Resource Discovery**
+- ✅ Automatically generate notebook name, description, and tags via NotebookLM
+- ✅ Progressive disclosure pattern inspired by Claude Skills best practices
+- ✅ Zero-friction notebook addition (30 seconds vs 5 minutes)
+- ✅ Validation of auto-generated metadata (kebab-case, description length, tags count)
+- ✅ Orchestrators discover relevant documentation autonomously
 
-**Planned options:**
-- **PM2 integration** (Recommended): Cross-platform process manager with auto-restart, monitoring, and logs
-  - Simple setup: `npm run daemon:start` (uses PM2 with optimized config)
-  - Automatic startup on system boot
-  - Built-in log rotation and monitoring
-- **Windows Service**: Native Windows service installation via `nssm` or `node-windows`
-- **Serverless-ready mode**: Lambda/cold-start compatible with lazy browser session initialization
+**👉 See [Auto-Discovery Documentation](./deployment/docs/07-AUTO-DISCOVERY.md) for details**
 
-**Status**: Planned for v1.2.0
+### 🔜 Planned for v1.4.0+
 
-### 🤖 Auto-fill Notebook Metadata
-**Goal**: Automatically generate notebook name, description, and keywords when adding a notebook.
+**Smart Metadata Refresh:**
+- Auto-detect when notebook content has changed
+- Re-query NotebookLM to update metadata
+- Endpoint: `PATCH /notebooks/:id/refresh`
 
-**How it works:**
-1. When adding a notebook with empty metadata, automatically ask NotebookLM:
-   - "If you had to name this notebook in one word, what would it be?"
-   - "Give me 10 relevant keywords for this content"
-   - "Describe this notebook in one sentence"
-2. Parse the response and auto-populate metadata fields
-3. Available as both automatic mode (on add) and manual command (`/notebooks/:id/auto-fill`)
+**Semantic Matching:**
+- Use embeddings for advanced notebook matching beyond tags
+- Endpoint: `GET /notebooks/match?query=gmail&semantic=true`
 
-**Benefits:**
-- No more manual metadata entry
-- Consistent, AI-generated descriptions
-- Better notebook organization and searchability
+**Usage Analytics:**
+- Track which notebooks are queried together
+- Suggest related notebooks based on usage patterns
+- Endpoint: `GET /notebooks/:id/related`
 
-**Status**: Planned for v1.2.0 or v1.3.0
+### 🚀 Previously Implemented
+
+**✅ PM2 Daemon Mode (v1.1.2):**
+- Cross-platform process manager with auto-restart
+- Commands: `npm run daemon:start`, `daemon:logs`, `daemon:status`
+- Built-in log rotation and monitoring
+
+**✅ Multi-Notebook Library (v1.1.2):**
+- Live validation of notebooks
+- Duplicate detection
+- Smart notebook selection
 
 ### 💡 Have an idea?
 [Open a discussion](https://github.com/roomi-fields/notebooklm-mcp/discussions) to suggest new features!

@@ -9,11 +9,12 @@
 This package contains **everything you need** to deploy NotebookLM MCP in HTTP REST API mode.
 
 **Package contents:**
-- ✅ 8 documentation files
+- ✅ 10 documentation files
 - ✅ 4 automated PowerShell scripts
 - ✅ Step-by-step installation guide
 - ✅ Complete API documentation
 - ✅ n8n integration guide
+- ✅ Auto-discovery feature documentation
 
 ---
 
@@ -35,7 +36,9 @@ deployment/
 │   ├── 02-CONFIGURATION.md        ← Advanced configuration
 │   ├── 03-API.md                  ← API documentation
 │   ├── 04-N8N-INTEGRATION.md      ← n8n integration
-│   └── 05-TROUBLESHOOTING.md      ← Problem resolution
+│   ├── 05-TROUBLESHOOTING.md      ← Problem resolution
+│   ├── 06-NOTEBOOK-LIBRARY.md     ← Multi-notebook management
+│   └── 07-AUTO-DISCOVERY.md       ← Auto-discovery pattern
 │
 └── scripts/
     ├── install.ps1                ← Automatic installation
@@ -82,6 +85,8 @@ PowerShell script that does everything
 | **[03-API.md](./docs/03-API.md)** | Complete REST API documentation | 15 min |
 | **[04-N8N-INTEGRATION.md](./docs/04-N8N-INTEGRATION.md)** | Integration with n8n, workflows | 20 min |
 | **[05-TROUBLESHOOTING.md](./docs/05-TROUBLESHOOTING.md)** | Complete problem resolution | 15 min |
+| **[06-NOTEBOOK-LIBRARY.md](./docs/06-NOTEBOOK-LIBRARY.md)** | Multi-notebook library management | 12 min |
+| **[07-AUTO-DISCOVERY.md](./docs/07-AUTO-DISCOVERY.md)** | Autonomous resource discovery pattern | 15 min |
 
 ### 🤝 Contribution and Project
 
@@ -195,9 +200,11 @@ cd deployment
 | CREDITS.md | ✅ Complete | Complete credits |
 | 01-INSTALL.md | ✅ Complete | Detailed installation |
 | 02-CONFIGURATION.md | ✅ Complete | Variables, security, PM2 |
-| 03-API.md | ✅ Complete | 8 documented endpoints |
+| 03-API.md | ✅ Complete | 12 documented endpoints |
 | 04-N8N-INTEGRATION.md | ✅ Complete | 3 example workflows |
 | 05-TROUBLESHOOTING.md | ✅ Complete | Complete solutions |
+| 06-NOTEBOOK-LIBRARY.md | ✅ Complete | Multi-notebook library |
+| 07-AUTO-DISCOVERY.md | ✅ Complete | Auto-discovery pattern |
 | install.ps1 | ✅ Complete | Automatic installation |
 | start-server.ps1 | ✅ Complete | Startup with checks |
 | stop-server.ps1 | ✅ Complete | Clean shutdown |
@@ -225,9 +232,14 @@ cd deployment
 
 ## 📝 Release Notes
 
-**Current version:** 1.1.2 HTTP
+**Current version:** 1.3.0
 
 **Included in this version:**
+- ✅ Auto-Discovery: Autonomous resource discovery pattern
+- ✅ POST `/notebooks/auto-discover` endpoint
+- ✅ Progressive disclosure inspired by Claude Skills
+- ✅ Automatic metadata validation and generation
+- ✅ Orchestrators can discover documentation autonomously
 - ✅ Fix persistent authentication Windows
 - ✅ Fix NotebookLM streaming detection
 - ✅ Removal of "EXTREMELY IMPORTANT" system phrase
@@ -235,7 +247,10 @@ cd deployment
 - ✅ PowerShell automation scripts
 - ✅ Complete deployment documentation
 
-**Possible future improvements (1.2.0+):**
+**Possible future improvements (1.4.0+):**
+- ⏳ Smart metadata refresh endpoint
+- ⏳ Semantic matching with embeddings
+- ⏳ Usage analytics for notebooks
 - ⏳ Optional Docker support
 - ⏳ Web administration interface
 - ⏳ Automated tests (unit + integration)
@@ -262,6 +277,6 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for:
 
 ---
 
-**Last updated:** January 21, 2025
-**Version:** 1.1.2-http
+**Last updated:** January 23, 2025
+**Version:** 1.3.0
 **Status:** ✅ Production-ready - Complete documentation
