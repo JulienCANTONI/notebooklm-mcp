@@ -7,6 +7,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.3.1] - 2025-01-24
+
+### Added
+
+**MCP Auto-Discovery Tool:**
+- New MCP tool `auto_discover_notebook` for Claude Desktop/Cursor integration
+- Automatically generates notebook metadata via NotebookLM (30 seconds vs 5 minutes)
+- Zero-friction notebook addition: just provide URL, metadata is auto-generated
+- Parity with HTTP API: MCP clients now have same auto-discovery capability
+
+**Documentation:**
+- Added `docs/CHROME_PROFILE_LIMITATION.md` documenting Chrome profile conflict
+- Documented current limitation: HTTP and MCP stdio modes cannot run simultaneously
+- Added roadmap for v1.4.0: Separate Chrome profiles by mode
+
+### Fixed
+
+**Critical Compatibility Fix:**
+- Disabled `CompleteRequestSchema` handler causing crashes with Claude Desktop
+- Fixed: "Server does not support completions" error on connection
+- Claude Desktop now connects successfully without modifications
+
+### Changed
+
+**Tool Documentation:**
+- Updated `add_notebook` tool to recommend `auto_discover_notebook` first
+- Clarified when to use manual entry vs auto-discovery
+- Added fallback workflow if auto-discovery fails
+
+**README Updates:**
+- Added warning about HTTP/stdio mode conflict (temporary until v1.4.0)
+- Added Chrome profile limitation to roadmap as priority feature
+- Updated feature descriptions to mention MCP auto-discovery availability
+
+### Known Issues
+
+**Chrome Profile Locking:**
+- HTTP server and MCP stdio modes cannot run simultaneously
+- Both modes use same Chrome profile, causing "resource busy" errors
+- **Workaround:** Choose one mode at a time, or stop HTTP daemon before using Claude Desktop
+- **Fix planned:** v1.4.0 will use separate Chrome profiles automatically
+
+---
+
 ## [1.3.0] - 2025-01-23
 
 ### Added

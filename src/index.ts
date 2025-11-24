@@ -38,7 +38,7 @@ import {
   ListResourcesRequestSchema,
   ListResourceTemplatesRequestSchema,
   ReadResourceRequestSchema,
-  CompleteRequestSchema,
+  // CompleteRequestSchema, // Disabled for Claude Desktop compatibility
   Tool,
 } from "@modelcontextprotocol/sdk/types.js";
 
@@ -65,7 +65,7 @@ class NotebookLMMCPServer {
     this.server = new Server(
       {
         name: "notebooklm-mcp",
-        version: "1.3.0",
+        version: "1.3.1",
       },
       {
         capabilities: {
@@ -101,27 +101,29 @@ class NotebookLMMCPServer {
 
   /**
    * Return notebook IDs matching the provided input (case-insensitive contains)
+   * Note: Disabled for Claude Desktop compatibility
    */
-  private completeNotebookIds(input: unknown): string[] {
-    const query = String(input ?? "").toLowerCase();
-    return this.library
-      .listNotebooks()
-      .map((nb) => nb.id)
-      .filter((id) => id.toLowerCase().includes(query))
-      .slice(0, 50);
-  }
+  // private completeNotebookIds(input: unknown): string[] {
+  //   const query = String(input ?? "").toLowerCase();
+  //   return this.library
+  //     .listNotebooks()
+  //     .map((nb) => nb.id)
+  //     .filter((id) => id.toLowerCase().includes(query))
+  //     .slice(0, 50);
+  // }
 
   /**
    * Build a completion payload for MCP responses
+   * Note: Disabled for Claude Desktop compatibility
    */
-  private buildCompletion(values: string[]) {
-    return {
-      completion: {
-        values,
-        total: values.length,
-      },
-    };
-  }
+  // private buildCompletion(values: string[]) {
+  //   return {
+  //     completion: {
+  //       values,
+  //       total: values.length,
+  //     },
+  //   };
+  // }
 
   /**
    * Setup MCP request handlers
@@ -319,23 +321,25 @@ class NotebookLMMCPServer {
     });
 
     // Argument completions (for prompt arguments)
-    this.server.setRequestHandler(CompleteRequestSchema, async (request) => {
-      const { ref, argument } = request.params as any;
-      try {
-        if (ref?.type === "ref/resource") {
-          // Complete variables for resource templates
-          const uri = String(ref.uri || "");
-          // Notebook by ID template
-          if (uri === "notebooklm://library/{id}" && argument?.name === "id") {
-            const values = this.completeNotebookIds(argument?.value);
-            return this.buildCompletion(values) as any;
-          }
-        }
-      } catch (e) {
-        log.warning(`⚠️  [MCP] completion error: ${e}`);
-      }
-      return { completion: { values: [], total: 0 } } as any;
-    });
+    // Note: Completions are optional and not supported by all MCP clients (e.g., Claude Desktop)
+    // We skip registering this handler to maintain compatibility
+    // this.server.setRequestHandler(CompleteRequestSchema, async (request) => {
+    //   const { ref, argument } = request.params as any;
+    //   try {
+    //     if (ref?.type === "ref/resource") {
+    //       // Complete variables for resource templates
+    //       const uri = String(ref.uri || "");
+    //       // Notebook by ID template
+    //       if (uri === "notebooklm://library/{id}" && argument?.name === "id") {
+    //         const values = this.completeNotebookIds(argument?.value);
+    //         return this.buildCompletion(values) as any;
+    //       }
+    //     }
+    //   } catch (e) {
+    //     log.warning(`⚠️  [MCP] completion error: ${e}`);
+    //   }
+    //   return { completion: { values: [], total: 0 } } as any;
+    // });
 
     // Handle tool calls
     this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
@@ -377,6 +381,12 @@ class NotebookLMMCPServer {
                 show_browser?: boolean;
               },
               sendProgress
+            );
+            break;
+
+          case "auto_discover_notebook":
+            result = await this.toolHandlers.handleAutoDiscoverNotebook(
+              args as { url: string }
             );
             break;
 

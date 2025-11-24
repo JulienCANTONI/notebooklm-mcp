@@ -20,6 +20,10 @@
 
 ---
 
+> **⚠️ Current Limitation (v1.3.0):** HTTP and MCP stdio modes cannot run simultaneously due to Chrome profile locking. Choose one mode at a time, or see [Chrome Profile Limitation](./docs/CHROME_PROFILE_LIMITATION.md) for details. This will be fixed in v1.4.0 with automatic profile separation.
+
+---
+
 ## 🚀 Two Ways to Use This Server
 
 ### 1️⃣ **HTTP REST API** (New! Recommended for n8n, Zapier, Make.com)
@@ -649,6 +653,13 @@ That said, if you run into problems or have questions, feel free to open an issu
 **👉 See [Auto-Discovery Documentation](./deployment/docs/07-AUTO-DISCOVERY.md) for details**
 
 ### 🔜 Planned for v1.4.0+
+
+**🔥 Separate Chrome Profiles by Mode (Priority):**
+- Enable HTTP and MCP stdio modes to run simultaneously
+- Automatic profile detection: `chrome_profile_http` vs `chrome_profile_stdio`
+- No user configuration needed - just works
+- Solves Chrome profile locking issue for dual-mode users
+- **👉 See [Chrome Profile Limitation](./docs/CHROME_PROFILE_LIMITATION.md) for details**
 
 **Smart Metadata Refresh:**
 - Auto-detect when notebook content has changed

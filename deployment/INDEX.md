@@ -232,11 +232,12 @@ cd deployment
 
 ## 📝 Release Notes
 
-**Current version:** 1.3.0
+**Current version:** 1.3.1
 
 **Included in this version:**
-- ✅ Auto-Discovery: Autonomous resource discovery pattern
-- ✅ POST `/notebooks/auto-discover` endpoint
+- ✅ MCP Auto-Discovery Tool: `auto_discover_notebook` for Claude Desktop
+- ✅ Critical fix: Claude Desktop compatibility (disabled CompleteRequestSchema)
+- ✅ HTTP Auto-Discovery: POST `/notebooks/auto-discover` endpoint
 - ✅ Progressive disclosure inspired by Claude Skills
 - ✅ Automatic metadata validation and generation
 - ✅ Orchestrators can discover documentation autonomously
@@ -246,8 +247,10 @@ cd deployment
 - ✅ Server listens on 0.0.0.0 (network accessible)
 - ✅ PowerShell automation scripts
 - ✅ Complete deployment documentation
+- ✅ Chrome profile limitation documented
 
 **Possible future improvements (1.4.0+):**
+- 🔥 Separate Chrome profiles by mode (HTTP vs stdio) - HIGH PRIORITY
 - ⏳ Smart metadata refresh endpoint
 - ⏳ Semantic matching with embeddings
 - ⏳ Usage analytics for notebooks
@@ -278,5 +281,5 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for:
 ---
 
 **Last updated:** January 23, 2025
-**Version:** 1.3.0
+**Version:** 1.3.1
 **Status:** ✅ Production-ready - Complete documentation

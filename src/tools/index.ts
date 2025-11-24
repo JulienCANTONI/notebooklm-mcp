@@ -248,12 +248,71 @@ export function buildToolDefinitions(library: NotebookLibrary): Tool[] {
       },
     },
     {
+      name: "auto_discover_notebook",
+      description:
+        `🚀 AUTO-DISCOVERY — Automatically generate notebook metadata via NotebookLM (RECOMMENDED)
+
+## When to Use
+- User provides NotebookLM URL and wants quick/automatic setup
+- User prefers not to manually specify metadata
+- Default choice for adding notebooks
+
+## Workflow
+1) User provides NotebookLM URL
+2) Ask confirmation: "Add '[URL]' with auto-generated metadata?"
+3) Call this tool → NotebookLM generates name, description, tags
+4) Show generated metadata to user for review
+
+## Benefits
+- ✅ 30 seconds vs 5 minutes manual entry
+- ✅ Zero-friction notebook addition
+- ✅ Consistent metadata quality
+- ✅ Discovers topics user might not think of
+
+## Example
+User: "Add this NotebookLM: https://notebooklm.google.com/notebook/abc123"
+You: "Add this notebook with auto-generated metadata?"
+User: "Yes"
+You: Call auto_discover_notebook(url="https://...")
+→ Returns: {name: "n8n-workflow-guide", description: "...", tags: [...]}
+
+## Fallback
+If auto-discovery fails (rare), use add_notebook tool for manual entry.
+
+## How to Get a NotebookLM Share Link
+
+Visit https://notebooklm.google/ → Login (free: 100 notebooks, 50 sources each, 500k words, 50 daily queries)
+1) Click "+ New" (top right) → Upload sources (docs, knowledge)
+2) Click "Share" (top right) → Select "Anyone with the link"
+3) Click "Copy link" (bottom left) → Give this link to Claude
+
+(Upgraded: Google AI Pro/Ultra gives 5x higher limits)`,
+      inputSchema: {
+        type: "object",
+        properties: {
+          url: {
+            type: "string",
+            description: "The NotebookLM notebook URL",
+          },
+        },
+        required: ["url"],
+      },
+    },
+    {
       name: "add_notebook",
       description:
-        `PERMISSION REQUIRED — Only when user explicitly asks to add a notebook.
+        `📝 MANUAL ENTRY — Add notebook with manually specified metadata (use auto_discover_notebook instead)
+
+## When to Use
+- Auto-discovery failed or unavailable
+- User has specific metadata requirements
+- User prefers manual control
 
 ## Conversation Workflow (Mandatory)
 When the user says: "I have a NotebookLM with X"
+
+**FIRST:** Try auto_discover_notebook for faster setup
+**ONLY IF** user refuses auto-discovery or it fails:
 
 1) Ask URL: "What is the NotebookLM URL?"
 2) Ask content: "What knowledge is inside?" (1–2 sentences)
@@ -269,11 +328,14 @@ When the user says: "I have a NotebookLM with X"
 
 ## Rules
 - Do not add without user permission
+- Prefer auto_discover_notebook when possible
 - Do not guess metadata — ask concisely
 - Confirm summary before calling the tool
 
 ## Example
 User: "I have a notebook with n8n docs"
+You: "Want me to auto-generate the metadata?" (offer auto_discover_notebook first)
+User: "No, I'll specify it myself"
 You: Ask URL → content → topics → use cases; propose summary
 User: "Yes"
 You: Call add_notebook
@@ -1280,6 +1342,56 @@ export class ToolHandlers {
     } finally {
       // Restore original CONFIG
       Object.assign(CONFIG, originalConfig);
+    }
+  }
+
+  /**
+   * Handle auto_discover_notebook tool
+   */
+  async handleAutoDiscoverNotebook(args: { url: string }): Promise<ToolResult<{ notebook: any }>> {
+    log.info(`🔧 [TOOL] auto_discover_notebook called`);
+    log.info(`  URL: ${args.url}`);
+
+    try {
+      // Import auto-discovery module
+      const { AutoDiscovery } = await import('../auto-discovery/auto-discovery.js');
+
+      // Create AutoDiscovery instance and discover metadata
+      log.info(`  🤖 Querying NotebookLM for auto-generated metadata...`);
+      const autoDiscovery = new AutoDiscovery(this.sessionManager);
+      const metadata = await autoDiscovery.discoverMetadata(args.url);
+
+      // Prepare notebook input
+      const notebookInput = {
+        url: args.url,
+        name: metadata.name,
+        description: metadata.description,
+        topics: metadata.tags, // tags → topics
+        content_types: ['documentation'],
+        use_cases: metadata.tags.slice(0, 3), // Use first 3 tags as use cases
+        auto_generated: true
+      };
+
+      // Add notebook to library
+      const notebook = await this.library.addNotebook(notebookInput);
+
+      log.success(`✅ [TOOL] auto_discover_notebook completed: ${notebook.id}`);
+      log.info(`  Generated metadata:`);
+      log.info(`    Name: ${metadata.name}`);
+      log.info(`    Description: ${metadata.description.substring(0, 100)}...`);
+      log.info(`    Tags: ${metadata.tags.join(', ')}`);
+
+      return {
+        success: true,
+        data: { notebook },
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      log.error(`❌ [TOOL] auto_discover_notebook failed: ${errorMessage}`);
+      return {
+        success: false,
+        error: `Auto-discovery failed: ${errorMessage}. Try using add_notebook for manual entry instead.`,
+      };
     }
   }
 

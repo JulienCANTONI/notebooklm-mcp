@@ -129,19 +129,22 @@
 
 ## 🔄 Changelog
 
-### v1.3.0 (2025-01-23)
+### v1.3.1 (2025-01-24)
 
 **New features:**
-- ✅ Auto-Discovery: Autonomous resource discovery pattern
-- ✅ POST `/notebooks/auto-discover` endpoint for automatic metadata generation
-- ✅ Progressive disclosure inspired by Claude Skills best practices
-- ✅ Validation of auto-generated metadata (kebab-case, description length, tags)
-- ✅ Orchestrators can discover documentation without manual configuration
+- ✅ MCP Auto-Discovery Tool: `auto_discover_notebook` for Claude Desktop/Cursor
+- ✅ Parity with HTTP API: MCP clients now have auto-discovery capability
+- ✅ Zero-friction notebook addition: just URL, metadata auto-generated
+
+**Critical Fixes:**
+- ✅ Claude Desktop compatibility: Disabled `CompleteRequestSchema` handler
+- ✅ Fixed "Server does not support completions" error on connection
 
 **Documentation:**
-- ✅ New guide [07-AUTO-DISCOVERY.md](./07-AUTO-DISCOVERY.md)
-- ✅ Enhanced API documentation with auto-discovery endpoint
-- ✅ Updated CHANGELOG with feature details
+- ✅ Added [CHROME_PROFILE_LIMITATION.md](../../docs/CHROME_PROFILE_LIMITATION.md) documenting HTTP/stdio conflict
+- ✅ Documented workaround for Chrome profile locking
+- ✅ Added v1.4.0 roadmap for separate Chrome profiles
+- ✅ Updated tool documentation to recommend auto-discovery first
 
 ### v1.1.2 (2025-11-22)
 
@@ -175,4 +178,4 @@ Or directly propose a PR to improve the documentation!
 ---
 
 **Documentation updated:** 2025-01-23
-**Version:** 1.3.0
+**Version:** 1.3.1
