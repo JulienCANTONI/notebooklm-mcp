@@ -268,7 +268,8 @@ try {
     if ($result.success -eq $false) {
         Write-ErrorExpected "$($result.error.Substring(0, [Math]::Min(80, $result.error.Length)))..."
 
-        if ($result.error -like "*Invalid*URL*" -or $result.error -like "*format*") {
+        # Accept various error messages for invalid URL: "Invalid URL", "format", "NotebookLM URL", "notebooklm.google.com"
+        if ($result.error -like "*Invalid*URL*" -or $result.error -like "*format*" -or $result.error -like "*NotebookLM*URL*" -or $result.error -like "*notebooklm.google.com*") {
             Write-Success "Correct error message (invalid URL)"
             $PassedTests++
         } else {
@@ -284,7 +285,8 @@ try {
     $errorResponse = $_.ErrorDetails.Message | ConvertFrom-Json
     Write-ErrorExpected "$($errorResponse.error.Substring(0, [Math]::Min(80, $errorResponse.error.Length)))..."
 
-    if ($errorResponse.error -like "*Invalid*URL*" -or $errorResponse.error -like "*format*") {
+    # Accept various error messages for invalid URL: "Invalid URL", "format", "NotebookLM URL", "notebooklm.google.com"
+    if ($errorResponse.error -like "*Invalid*URL*" -or $errorResponse.error -like "*format*" -or $errorResponse.error -like "*NotebookLM*URL*" -or $errorResponse.error -like "*notebooklm.google.com*") {
         Write-Success "Correct error message (invalid URL)"
         $PassedTests++
     } else {

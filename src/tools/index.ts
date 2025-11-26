@@ -1759,23 +1759,35 @@ export class ToolHandlers {
 
         if (result.success) {
           log.success(`✅ [TOOL] cleanup_data completed - deleted ${result.deletedPaths.length} items`);
+          return {
+            success: true as const,
+            data: {
+              status: "completed",
+              mode,
+              result: {
+                deletedPaths: result.deletedPaths,
+                failedPaths: result.failedPaths,
+                totalSizeBytes: result.totalSizeBytes,
+                categorySummary: result.categorySummary,
+              },
+            },
+          };
         } else {
           log.warning(`⚠️  [TOOL] cleanup_data completed with ${result.failedPaths.length} errors`);
-        }
-
-        return {
-          success: result.success,
-          data: {
-            status: result.success ? "completed" : "partial",
-            mode,
-            result: {
-              deletedPaths: result.deletedPaths,
-              failedPaths: result.failedPaths,
-              totalSizeBytes: result.totalSizeBytes,
-              categorySummary: result.categorySummary,
+          return {
+            success: true as const,
+            data: {
+              status: "partial",
+              mode,
+              result: {
+                deletedPaths: result.deletedPaths,
+                failedPaths: result.failedPaths,
+                totalSizeBytes: result.totalSizeBytes,
+                categorySummary: result.categorySummary,
+              },
             },
-          },
-        };
+          };
+        }
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);

@@ -338,7 +338,8 @@ export class AuthManager {
           }
 
           await page.waitForTimeout(checkIntervalMs);
-        } catch {
+        } catch (error) {
+          log.debug(`[LOGIN] Poll iteration error (non-critical): ${error}`);
           await page.waitForTimeout(checkIntervalMs);
           continue;
         }
@@ -535,8 +536,8 @@ export class AuthManager {
           await page.waitForTimeout(2000);
           return true;
         }
-      } catch {
-        // Ignore errors
+      } catch (error) {
+        log.debug(`[REDIRECT] URL check error (non-critical): ${error}`);
       }
 
       await page.waitForTimeout(500);
@@ -564,8 +565,8 @@ export class AuthManager {
           log.success("  ✅ NotebookLM URL detected");
           return true;
         }
-      } catch {
-        // Ignore errors
+      } catch (error) {
+        log.debug(`[NOTEBOOK] URL check error (non-critical): ${error}`);
       }
 
       await page.waitForTimeout(1000);
@@ -603,7 +604,8 @@ export class AuthManager {
       }
 
       return false;
-    } catch {
+    } catch (error) {
+      log.debug(`[ACCOUNT_CHOOSER] Error handling account chooser: ${error}`);
       return false;
     }
   }
@@ -635,7 +637,8 @@ export class AuthManager {
           if (!(await candidate.isVisible())) {
             continue; // Hidden field
           }
-        } catch {
+        } catch (error) {
+          log.debug(`[EMAIL] Visibility check failed for ${selector}: ${error}`);
           continue;
         }
 
@@ -643,7 +646,8 @@ export class AuthManager {
         emailSelector = selector;
         log.success(`    ✅ Email field visible: ${selector}`);
         break;
-      } catch {
+      } catch (error) {
+        log.debug(`[EMAIL] Selector ${selector} not found: ${error}`);
         continue;
       }
     }
@@ -663,8 +667,8 @@ export class AuthManager {
         await randomMouseMovement(page, targetX, targetY);
         await randomDelay(200, 500);
       }
-    } catch {
-      // Ignore errors
+    } catch (error) {
+      log.debug(`[EMAIL] Mouse movement failed (non-critical): ${error}`);
     }
 
     // Click to focus
@@ -674,8 +678,8 @@ export class AuthManager {
       log.warning(`    ⚠️  Could not click email field (${error}); trying direct focus`);
       try {
         await emailField.focus();
-      } catch {
-        log.error("    ❌ Failed to focus email field");
+      } catch (focusError) {
+        log.error(`    ❌ Failed to focus email field: ${focusError}`);
         return false;
       }
     }
@@ -691,7 +695,8 @@ export class AuthManager {
       try {
         await page.fill(emailSelector, email);
         log.success("    ✅ Filled email using fallback");
-      } catch {
+      } catch (fillError) {
+        log.error(`    ❌ Fallback fill also failed: ${fillError}`);
         return false;
       }
     }
@@ -718,7 +723,8 @@ export class AuthManager {
           nextClicked = true;
           break;
         }
-      } catch {
+      } catch (error) {
+        log.debug(`[EMAIL] Next button selector ${selector} failed: ${error}`);
         continue;
       }
     }
@@ -753,7 +759,8 @@ export class AuthManager {
           log.success(`    ✅ Password field found: ${selector}`);
           break;
         }
-      } catch {
+      } catch (error) {
+        log.debug(`[PASSWORD] Selector ${selector} not found: ${error}`);
         continue;
       }
     }
@@ -772,8 +779,8 @@ export class AuthManager {
         await randomMouseMovement(page, targetX, targetY);
         await randomDelay(300, 700);
       }
-    } catch {
-      // Ignore errors
+    } catch (error) {
+      log.debug(`[PASSWORD] Mouse movement failed (non-critical): ${error}`);
     }
 
     // Click to focus
@@ -816,7 +823,8 @@ export class AuthManager {
           pwdNextClicked = true;
           break;
         }
-      } catch {
+      } catch (error) {
+        log.debug(`[PASSWORD] Next button selector ${selector} failed: ${error}`);
         continue;
       }
     }
@@ -845,7 +853,8 @@ export class AuthManager {
           await randomDelay(120, 260);
           return true;
         }
-      } catch {
+      } catch (error) {
+        log.debug(`[CLICK_TEXT] Text "${text}" not found or click failed: ${error}`);
         continue;
       }
     }
@@ -1051,14 +1060,16 @@ export class AuthManager {
     try {
       try {
         await fs.unlink(this.stateFilePath);
-      } catch {
-        // File doesn't exist
+        log.debug(`[CLEAR_STATE] Deleted state file: ${this.stateFilePath}`);
+      } catch (error) {
+        log.debug(`[CLEAR_STATE] State file not found (expected): ${error}`);
       }
 
       try {
         await fs.unlink(this.sessionFilePath);
-      } catch {
-        // File doesn't exist
+        log.debug(`[CLEAR_STATE] Deleted session file: ${this.sessionFilePath}`);
+      } catch (error) {
+        log.debug(`[CLEAR_STATE] Session file not found (expected): ${error}`);
       }
 
       log.success("✅ Authentication state cleared");
@@ -1083,8 +1094,8 @@ export class AuthManager {
         await fs.unlink(this.stateFilePath);
         log.info(`  🗑️  Deleted: ${this.stateFilePath}`);
         deletedCount++;
-      } catch {
-        // File doesn't exist
+      } catch (error) {
+        log.debug(`[HARD_RESET] State file not found (expected): ${error}`);
       }
 
       // Delete session file
@@ -1092,8 +1103,8 @@ export class AuthManager {
         await fs.unlink(this.sessionFilePath);
         log.info(`  🗑️  Deleted: ${this.sessionFilePath}`);
         deletedCount++;
-      } catch {
-        // File doesn't exist
+      } catch (error) {
+        log.debug(`[HARD_RESET] Session file not found (expected): ${error}`);
       }
 
       // Delete entire browser_state_dir
@@ -1104,8 +1115,8 @@ export class AuthManager {
           deletedCount++;
         }
         log.info(`  🗑️  Deleted: ${CONFIG.browserStateDir}/ (${files.length} files)`);
-      } catch {
-        // Directory doesn't exist or empty
+      } catch (error) {
+        log.debug(`[HARD_RESET] Browser state dir empty or not found: ${error}`);
       }
 
       if (deletedCount === 0) {
