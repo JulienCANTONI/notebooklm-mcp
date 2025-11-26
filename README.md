@@ -652,6 +652,12 @@ That said, if you run into problems or have questions, feel free to open an issu
 
 **👉 See [Auto-Discovery Documentation](./deployment/docs/07-AUTO-DISCOVERY.md) for details**
 
+### 🔧 Minor Fixes (v1.3.5)
+
+**Cosmetic improvements:**
+- Fix PowerShell `CursorPosition` error in test scripts (non-interactive terminal)
+- Add strict type validation for `show_browser` parameter (return 400 on invalid types)
+
 ### 🔜 Planned for v1.4.0+
 
 **🔥 Separate Chrome Profiles by Mode (Priority):**
