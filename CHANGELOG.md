@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.3.6] - 2025-11-29
+
+### Changed
+
+**Documentation Restructure:**
+
+- Simplified README.md from 765 to 165 lines (-78%)
+- Extracted roadmap section into dedicated `ROADMAP.md` file
+- README now focuses on Quick Start with links to detailed docs
+- Better separation of concerns: README for overview, docs/ for details
+
+### Added
+
+- New `ROADMAP.md` file with planned features and version history
+
+---
+
 ## [1.3.5] - 2025-11-27
 
 ### Added
