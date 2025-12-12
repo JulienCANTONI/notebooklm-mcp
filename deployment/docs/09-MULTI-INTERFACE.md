@@ -36,15 +36,34 @@ The **Stdio-HTTP Proxy** enables Claude Desktop to communicate with the HTTP ser
 
 ### Step 1: Start the HTTP Server
 
-```bash
-cd /path/to/notebooklm-mcp-http
+> **⚠️ CRITICAL: The HTTP server MUST run on Windows (not WSL)**
+>
+> The server uses Playwright to control Chrome. If you run the server from WSL,
+> it will look for Chrome at Linux paths (`/opt/google/chrome/chrome`) instead
+> of Windows paths and **will fail**.
+>
+> Always start the HTTP server from **PowerShell** or **CMD**, not from WSL bash.
+
+**From PowerShell (recommended):**
+
+```powershell
+cd D:\Claude\notebooklm-mcp-http
 
 # Build if needed
 npm run build
 
-# Start HTTP server (owns Chrome)
-npm run start:http
-# Or as daemon: npm run daemon:start
+# Start HTTP server (foreground)
+node dist/http-wrapper.js
+
+# Or in background (survives terminal close):
+Start-Process -NoNewWindow node -ArgumentList "dist/http-wrapper.js"
+```
+
+**From WSL (launches Windows node process):**
+
+```bash
+# This launches node.exe on Windows, NOT node in WSL
+powershell.exe -Command "Start-Process -NoNewWindow -FilePath 'node' -ArgumentList 'D:/Claude/notebooklm-mcp-http/dist/http-wrapper.js' -WorkingDirectory 'D:/Claude/notebooklm-mcp-http'"
 ```
 
 ### Step 2: Configure Claude Desktop
@@ -187,17 +206,29 @@ curl -X POST http://localhost:3000/setup-auth
 # Ask: "Setup NotebookLM authentication"
 ```
 
-### WSL Users
+### WSL Users - Chrome not found
 
-For WSL, the HTTP server must run on Windows (for Chrome access). Use the proxy from WSL:
-
-```bash
-# In WSL, point to Windows localhost
-export MCP_HTTP_URL="http://localhost:3000"
-node /mnt/d/Claude/notebooklm-mcp-http/dist/stdio-http-proxy.js
+```
+Error: Playwright cannot find Chrome at /opt/google/chrome/chrome
 ```
 
-Or configure Claude Desktop on Windows with the proxy.
+**This means you started the HTTP server from WSL instead of Windows.**
+
+The HTTP server MUST run as a Windows process to access Chrome. Fix:
+
+```bash
+# 1. Kill the WSL server
+pkill -f http-wrapper
+
+# 2. Start as Windows process (from WSL)
+powershell.exe -Command "Start-Process -NoNewWindow -FilePath 'node' -ArgumentList 'D:/Claude/notebooklm-mcp-http/dist/http-wrapper.js' -WorkingDirectory 'D:/Claude/notebooklm-mcp-http'"
+
+# 3. Verify it works (via PowerShell, not curl from WSL)
+powershell.exe -Command "Invoke-RestMethod -Uri 'http://localhost:3000/health'"
+```
+
+> **Note:** `curl` from WSL may not reach Windows localhost due to network isolation.
+> Use `powershell.exe Invoke-RestMethod` to test the server.
 
 ---
 
