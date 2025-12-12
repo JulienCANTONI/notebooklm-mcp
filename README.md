@@ -82,7 +82,8 @@ curl -X POST http://localhost:3000/ask \
 | [Troubleshooting](./deployment/docs/05-TROUBLESHOOTING.md)   | Common issues and solutions               |
 | [Notebook Library](./deployment/docs/06-NOTEBOOK-LIBRARY.md) | Multi-notebook management                 |
 | [Auto-Discovery](./deployment/docs/07-AUTO-DISCOVERY.md)     | Autonomous metadata generation            |
-| [Chrome Limitation](./docs/CHROME_PROFILE_LIMITATION.md)     | HTTP/MCP simultaneous mode issue          |
+| [Multi-Interface](./deployment/docs/09-MULTI-INTERFACE.md)   | Run Claude Desktop + HTTP simultaneously  |
+| [Chrome Limitation](./docs/CHROME_PROFILE_LIMITATION.md)     | Profile locking (solved in v1.3.6+)       |
 
 ---
 
@@ -111,7 +112,9 @@ Your Task → Agent/n8n → MCP/HTTP Server → Chrome Automation → NotebookLM
 
 See [ROADMAP.md](./ROADMAP.md) for planned features and version history.
 
-**Next up (v1.4.0):** Separate Chrome profiles to enable HTTP + MCP modes simultaneously.
+**v1.3.6:** Multi-interface mode via stdio-HTTP proxy (run Claude Desktop + HTTP simultaneously).
+
+**Next up (v1.4.0):** Separate Chrome profiles for independent authentication per mode.
 
 ---
 

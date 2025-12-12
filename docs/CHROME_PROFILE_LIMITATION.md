@@ -1,6 +1,20 @@
 # Chrome Profile Limitation
 
-## 🚨 Current Limitation (v1.3.2)
+## ✅ SOLVED: Use the Stdio-HTTP Proxy (v1.3.6+)
+
+**The proxy mode allows Claude Desktop and HTTP server to run simultaneously!**
+
+```bash
+# Terminal 1: Start HTTP server (owns Chrome)
+npm run start:http
+
+# Claude Desktop uses the proxy (no Chrome needed)
+# See: deployment/docs/09-MULTI-INTERFACE.md
+```
+
+---
+
+## 🚨 Original Limitation (v1.3.2-v1.3.5)
 
 **The HTTP server and MCP stdio modes cannot run simultaneously** due to Chrome profile locking.
 

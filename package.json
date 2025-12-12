@@ -4,14 +4,17 @@
   "description": "MCP server for NotebookLM API with HTTP REST API - Zero hallucinations from your notebooks",
   "type": "module",
   "bin": {
-    "notebooklm-mcp": "dist/index.js"
+    "notebooklm-mcp": "dist/index.js",
+    "notebooklm-mcp-proxy": "dist/stdio-http-proxy.js"
   },
   "scripts": {
     "help": "node dist/cli/help.js",
     "setup-auth": "node dist/cli/setup-auth.js",
     "de-auth": "node dist/cli/de-auth.js",
     "start:http": "node dist/http-wrapper.js",
+    "start:proxy": "node dist/stdio-http-proxy.js",
     "dev:http": "tsx watch src/http-wrapper.ts",
+    "dev:proxy": "tsx watch src/stdio-http-proxy.ts",
     "daemon:start": "pm2 start ecosystem.config.cjs",
     "daemon:stop": "pm2 stop notebooklm-mcp",
     "daemon:restart": "pm2 restart notebooklm-mcp",
