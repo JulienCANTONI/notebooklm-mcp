@@ -119,13 +119,24 @@ curl -X POST http://localhost:3000/ask \
 
 **Body Parameters:**
 
-| Parameter      | Type    | Required | Description               |
-| -------------- | ------- | -------- | ------------------------- |
-| `question`     | string  | ✅ Yes   | The question to ask       |
-| `notebook_id`  | string  | ❌ No    | Notebook ID (or URL)      |
-| `notebook_url` | string  | ❌ No    | Direct notebook URL       |
-| `session_id`   | string  | ❌ No    | Reuse an existing session |
-| `show_browser` | boolean | ❌ No    | Show Chrome (debug)       |
+| Parameter       | Type    | Required | Description                            |
+| --------------- | ------- | -------- | -------------------------------------- |
+| `question`      | string  | ✅ Yes   | The question to ask                    |
+| `notebook_id`   | string  | ❌ No    | Notebook ID (or URL)                   |
+| `notebook_url`  | string  | ❌ No    | Direct notebook URL                    |
+| `session_id`    | string  | ❌ No    | Reuse an existing session              |
+| `show_browser`  | boolean | ❌ No    | Show Chrome (debug)                    |
+| `source_format` | string  | ❌ No    | Citation extraction format (see below) |
+
+**Source Format Options:**
+
+| Format      | Description                           | Example Output                              |
+| ----------- | ------------------------------------- | ------------------------------------------- |
+| `none`      | No extraction (default, fastest)      | `"text[1]..."`                              |
+| `inline`    | Insert source text inline             | `"text[1: "source excerpt..."]..."`         |
+| `footnotes` | Append sources at the end             | Answer + `---\n**Sources:**\n[1] text...`   |
+| `json`      | Return sources as separate object     | `{ answer: "...", sources: { citations } }` |
+| `expanded`  | Replace markers with full quoted text | `"text "full source quote..."..."`          |
 
 **Success Response (200):**
 
@@ -142,6 +153,35 @@ curl -X POST http://localhost:3000/ask \
       "age_seconds": 44,
       "message_count": 1,
       "last_activity": 1763737756057
+    }
+  }
+}
+```
+
+**Success Response with Sources (200):**
+
+When using `source_format` other than `none`:
+
+```json
+{
+  "success": true,
+  "data": {
+    "status": "success",
+    "question": "What is the Self in IFS?",
+    "answer": "The Self is the core essence[1: \"The Self is the seat of consciousness...\"]...",
+    "session_id": "abc123",
+    "notebook_url": "https://notebooklm.google.com/notebook/xxx",
+    "session_info": { ... },
+    "sources": {
+      "format": "inline",
+      "citations": [
+        {
+          "marker": "[1]",
+          "number": 1,
+          "sourceText": "The Self is the seat of consciousness that possesses the 8 C's..."
+        }
+      ],
+      "extraction_success": true
     }
   }
 }

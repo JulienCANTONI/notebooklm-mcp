@@ -49,7 +49,8 @@ export class AutoDiscovery {
         const prompt = this.generatePrompt();
         log.dim(`   Sending discovery prompt to NotebookLM...`);
 
-        const response = await session.ask(prompt);
+        const askResult = await session.ask(prompt);
+        const response = askResult.answer;
         log.dim(`   Received response (${response.length} chars)`);
 
         // 3. Parse and validate response

@@ -7,6 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.3.7] - 2025-12-16
+
+### Added
+
+**Source Citation Extraction:**
+
+- New `source_format` parameter for `ask_question` tool with 5 options:
+  - `none`: No extraction (default, fastest)
+  - `inline`: Insert source text inline: `[1: "source excerpt..."]`
+  - `footnotes`: Append sources at the end as footnotes
+  - `json`: Return sources as separate object in response
+  - `expanded`: Replace markers with full quoted source text
+- New `src/utils/citation-extractor.ts` module for hover-based citation extraction
+- Extracts source citations by hovering over citation markers in NotebookLM responses
+- No additional API calls required - pure DOM interaction
+
+### Fixed
+
+**Citation Detection:**
+
+- Fixed `findCitationsByRegex` returning empty results - now properly finds DOM elements
+- Added multiple detection strategies: CSS selectors, data attributes, XPath fallback
+- Fixed citation replacement for all occurrence (was only replacing first match)
+- Added descending sort to avoid replacing `[1]` before `[10]`
+- Handle NotebookLM's various citation formats:
+  - Bracketed: `[1]`, `[2]`
+  - Superscript: `text1,2` or `text3`
+  - Stuck together: `text123` (citations 1, 2, 3)
+
+---
+
 ## [1.3.6] - 2025-11-29
 
 ### Changed

@@ -18,10 +18,27 @@ import { SharedContextManager } from './shared-context-manager.js';
 import { AuthManager } from '../auth/auth-manager.js';
 import { humanType, randomDelay } from '../utils/stealth-utils.js';
 import { waitForLatestAnswer, snapshotAllResponses } from '../utils/page-utils.js';
+import {
+  extractCitations,
+  type SourceFormat,
+  type CitationExtractionResult,
+} from '../utils/citation-extractor.js';
 import { CONFIG } from '../config.js';
 import { log } from '../utils/logger.js';
 import type { SessionInfo, ProgressCallback } from '../types.js';
 import { RateLimitError } from '../errors.js';
+
+/**
+ * Result from asking a question (internal)
+ */
+export interface AskResult {
+  /** The answer text (formatted if source_format specified) */
+  answer: string;
+  /** Original unformatted answer */
+  originalAnswer: string;
+  /** Citation extraction result (if source_format is not 'none') */
+  citationResult?: CitationExtractionResult;
+}
 
 export class BrowserSession {
   public readonly sessionId: string;
@@ -352,9 +369,18 @@ export class BrowserSession {
 
   /**
    * Ask a question to NotebookLM
+   *
+   * @param question The question to ask
+   * @param sendProgress Progress callback for status updates
+   * @param sourceFormat Optional format for source citation extraction
+   * @returns AskResult with answer and optional citation data
    */
-  async ask(question: string, sendProgress?: ProgressCallback): Promise<string> {
-    const askOnce = async (): Promise<string> => {
+  async ask(
+    question: string,
+    sendProgress?: ProgressCallback,
+    sourceFormat: SourceFormat = 'none'
+  ): Promise<AskResult> {
+    const askOnce = async (): Promise<AskResult> => {
       if (!this.initialized || !this.page || this.isPageClosedSafe()) {
         log.warning(`  ℹ️  Session not initialized or page missing → re-initializing...`);
         await this.init();
@@ -437,7 +463,31 @@ export class BrowserSession {
         `✅ [${this.sessionId}] Received answer (${answer.length} chars, ${this.messageCount} total messages)`
       );
 
-      return answer;
+      // Extract citations if requested (no additional API calls - just DOM interaction)
+      let citationResult: CitationExtractionResult | undefined;
+      if (sourceFormat !== 'none') {
+        await sendProgress?.('Extracting source citations...', 4, 5);
+
+        // Find the response container for citation extraction
+        const responseContainer = await page.$(
+          '.to-user-container:last-child .message-text-content'
+        );
+
+        citationResult = await extractCitations(page, answer, responseContainer, sourceFormat);
+
+        if (citationResult.success && citationResult.citations.length > 0) {
+          log.success(`  📚 Extracted ${citationResult.citations.length} source citations`);
+        }
+      }
+
+      // Return result with optional citation data
+      const result: AskResult = {
+        answer: citationResult?.formattedAnswer || answer,
+        originalAnswer: answer,
+        citationResult: sourceFormat !== 'none' ? citationResult : undefined,
+      };
+
+      return result;
     };
 
     try {

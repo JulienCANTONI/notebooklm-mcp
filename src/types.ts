@@ -3,6 +3,30 @@
  */
 
 /**
+ * Source format options for citation display
+ */
+export type SourceFormat =
+  | 'none' // No source extraction (default, fastest)
+  | 'inline' // Insert source text inline: "text [1: source excerpt]"
+  | 'footnotes' // Append sources at the end as footnotes
+  | 'json' // Return sources as separate JSON object
+  | 'expanded'; // Replace [1] with full quoted source text
+
+/**
+ * Extracted citation data
+ */
+export interface Citation {
+  /** Citation marker (e.g., "[1]", "[2]") */
+  marker: string;
+  /** Citation number */
+  number: number;
+  /** Source text from hover tooltip */
+  sourceText: string;
+  /** Source name/title if available */
+  sourceName?: string;
+}
+
+/**
  * Session information returned by the API
  */
 export interface SessionInfo {
@@ -29,6 +53,17 @@ export interface AskQuestionResult {
     age_seconds: number;
     message_count: number;
     last_activity: number;
+  };
+  /** Extracted source citations (when source_format is not 'none') */
+  sources?: {
+    /** Format used for extraction */
+    format: SourceFormat;
+    /** List of extracted citations */
+    citations: Citation[];
+    /** Whether extraction was successful */
+    extraction_success: boolean;
+    /** Error message if extraction failed */
+    extraction_error?: string;
   };
 }
 

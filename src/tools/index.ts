@@ -23,7 +23,13 @@ import type {
 } from '../library/types.js';
 import { CONFIG, applyBrowserOptions, type BrowserOptions } from '../config.js';
 import { log } from '../utils/logger.js';
-import type { AskQuestionResult, ToolResult, Tool, ProgressCallback } from '../types.js';
+import type {
+  AskQuestionResult,
+  ToolResult,
+  Tool,
+  ProgressCallback,
+  SourceFormat,
+} from '../types.js';
 import { RateLimitError } from '../errors.js';
 import { CleanupManager } from '../utils/cleanup-manager.js';
 
@@ -170,6 +176,18 @@ export function buildToolDefinitions(library: NotebookLibrary): Tool[] {
             description:
               'Show browser window for debugging (simple version). ' +
               'For advanced control (typing speed, stealth, etc.), use browser_options instead.',
+          },
+          source_format: {
+            type: 'string',
+            enum: ['none', 'inline', 'footnotes', 'json', 'expanded'],
+            description:
+              'Format for source citation extraction (default: none). Options:\n' +
+              '- none: No source extraction (fastest)\n' +
+              '- inline: Insert source text inline: "text [1: source excerpt]"\n' +
+              '- footnotes: Append sources at the end as footnotes\n' +
+              '- json: Return sources as separate object in response\n' +
+              '- expanded: Replace [1] with full quoted source text\n\n' +
+              'Note: Source extraction adds ~1-2 seconds but does NOT consume additional NotebookLM quota.',
           },
           browser_options: {
             type: 'object',
@@ -789,11 +807,20 @@ export class ToolHandlers {
       notebook_id?: string;
       notebook_url?: string;
       show_browser?: boolean;
+      source_format?: SourceFormat;
       browser_options?: BrowserOptions;
     },
     sendProgress?: ProgressCallback
   ): Promise<ToolResult<AskQuestionResult>> {
-    const { question, session_id, notebook_id, notebook_url, show_browser, browser_options } = args;
+    const {
+      question,
+      session_id,
+      notebook_id,
+      notebook_url,
+      show_browser,
+      source_format = 'none',
+      browser_options,
+    } = args;
 
     log.info(`🔧 [TOOL] ask_question called`);
     log.info(`  Question: "${question.substring(0, 100)}..."`);
@@ -805,6 +832,9 @@ export class ToolHandlers {
     }
     if (notebook_url) {
       log.info(`  Notebook URL: ${notebook_url}`);
+    }
+    if (source_format !== 'none') {
+      log.info(`  Source format: ${source_format}`);
     }
 
     try {
@@ -904,10 +934,10 @@ export class ToolHandlers {
         // Progress: Asking question
         await sendProgress?.('Asking question to NotebookLM...', 2, 5);
 
-        // Ask the question (pass progress callback)
-        const rawAnswer = await session.ask(question, sendProgress);
+        // Ask the question with optional source extraction
+        const askResult = await session.ask(question, sendProgress, source_format);
         // Note: FOLLOW_UP_REMINDER removed for cleaner responses
-        const answer = rawAnswer.trimEnd();
+        const answer = askResult.answer.trimEnd();
 
         // Get session info
         const sessionInfo = session.getInfo();
@@ -924,6 +954,16 @@ export class ToolHandlers {
             last_activity: sessionInfo.last_activity,
           },
         };
+
+        // Add source citations if extracted
+        if (askResult.citationResult && source_format !== 'none') {
+          result.sources = {
+            format: source_format,
+            citations: askResult.citationResult.citations,
+            extraction_success: askResult.citationResult.success,
+            extraction_error: askResult.citationResult.error,
+          };
+        }
 
         // Progress: Complete
         await sendProgress?.('Question answered successfully!', 5, 5);
