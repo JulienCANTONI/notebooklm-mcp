@@ -96,7 +96,8 @@ function buildProxyToolDefinitions(): Tool[] {
         '- notebook_id: Library notebook ID\n' +
         '- notebook_url: Direct notebook URL\n' +
         '- session_id: Reuse existing session\n' +
-        '- show_browser: Show browser window for debugging',
+        '- show_browser: Show browser window for debugging\n' +
+        '- source_format: Citation extraction format (none, inline, footnotes, json, expanded)',
       inputSchema: {
         type: 'object',
         properties: {
@@ -105,6 +106,12 @@ function buildProxyToolDefinitions(): Tool[] {
           notebook_id: { type: 'string', description: 'Optional notebook ID from library' },
           notebook_url: { type: 'string', description: 'Optional direct notebook URL' },
           show_browser: { type: 'boolean', description: 'Show browser window for debugging' },
+          source_format: {
+            type: 'string',
+            enum: ['none', 'inline', 'footnotes', 'json', 'expanded'],
+            description:
+              'Citation extraction format: none (default, fastest), inline ([1: "text..."]), footnotes (sources at end), json (separate object), expanded (replace markers with full text)',
+          },
         },
         required: ['question'],
       },

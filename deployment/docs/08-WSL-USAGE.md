@@ -1,140 +1,235 @@
 # WSL Usage Guide
 
-This guide explains how to use the NotebookLM MCP HTTP Server from WSL (Windows Subsystem for Linux).
+This guide explains how to use the NotebookLM MCP Server with Claude Code from WSL (Windows Subsystem for Linux).
 
 ## Architecture Overview
 
-Due to browser requirements (Playwright needs Chrome), the server must run on **Windows** to access Chrome. However, you can interact with it from WSL using the provided helper script.
+Due to browser requirements (Playwright needs Chrome), the HTTP server must run on **Windows**. Claude Code in WSL communicates with it through a stdio-HTTP proxy.
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                         WINDOWS                              │
-│  ┌─────────────────────┐    ┌─────────────────────────────┐ │
-│  │  MCP HTTP Server    │    │       Chrome Browser        │ │
-│  │  (node.exe)         │◄──►│   (Playwright-controlled)   │ │
-│  │  localhost:3000     │    │                             │ │
-│  └─────────────────────┘    └─────────────────────────────┘ │
-│            ▲                                                 │
-└────────────┼─────────────────────────────────────────────────┘
-             │ PowerShell Invoke-RestMethod
-             │ (bypasses WSL network isolation)
-┌────────────┼─────────────────────────────────────────────────┐
-│            │                  WSL                            │
-│  ┌─────────┴───────────────────────────────────────────────┐│
-│  │  mcp-wsl-helper.sh                                      ││
-│  │  - Calls Windows PowerShell for HTTP requests           ││
-│  │  - Manages server lifecycle (start/stop)                ││
-│  └─────────────────────────────────────────────────────────┘│
-│                                                              │
-│  ┌─────────────────────────────────────────────────────────┐│
-│  │  Your Agent / Script                                    ││
-│  │  - Uses helper script or direct PowerShell calls        ││
-│  └─────────────────────────────────────────────────────────┘│
-└──────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│                         WINDOWS                                  │
+│  ┌─────────────────────┐    ┌─────────────────────────────┐     │
+│  │  HTTP Server        │    │       Chrome Browser        │     │
+│  │  (node.exe)         │◄──►│   (Playwright-controlled)   │     │
+│  │  localhost:3000     │    │                             │     │
+│  └─────────────────────┘    └─────────────────────────────┘     │
+│            ▲                                                     │
+└────────────┼─────────────────────────────────────────────────────┘
+             │ HTTP (localhost:3000)
+┌────────────┼─────────────────────────────────────────────────────┐
+│            │                  WSL                                │
+│  ┌─────────┴───────────────────────────────────────────────────┐│
+│  │  Claude Code                                                ││
+│  │  └── stdio-http-proxy.js (node.exe)                         ││
+│  │      - Translates MCP stdio ←→ HTTP calls                   ││
+│  │      - Points to localhost:3000                             ││
+│  └─────────────────────────────────────────────────────────────┘│
+└──────────────────────────────────────────────────────────────────┘
 ```
 
 ## Quick Start
 
-### 1. Start the Server
+### 1. Start the HTTP Server on Windows
 
-```bash
-# Using the helper script
-/mnt/d/Claude/notebooklm-mcp-http/scripts/mcp-wsl-helper.sh start
+**CRITICAL: The HTTP server MUST run on Windows, NOT in WSL**
 
-# Or manually via PowerShell
-powershell.exe -Command "Start-Process -NoNewWindow -FilePath 'node' -ArgumentList 'D:/Claude/notebooklm-mcp-http/dist/http-wrapper.js' -WorkingDirectory 'D:/Claude/notebooklm-mcp-http'"
+Open a **Windows terminal** (PowerShell or CMD, not WSL):
+
+```powershell
+cd D:\Claude\notebooklm-mcp-http
+npm run start:http
 ```
 
-### 2. Check Server Status
+**Verification:** The logs must show Windows paths:
 
-```bash
-/mnt/d/Claude/notebooklm-mcp-http/scripts/mcp-wsl-helper.sh status
+```
+Chrome Profile: C:\Users\...\AppData\Local\notebooklm-mcp\Data\chrome_profile
+Listening on 0.0.0.0:3000
 ```
 
-### 3. Authenticate (First Time)
+If you see `/opt/google/chrome/chrome` in error messages, the server is running under WSL, not Windows!
+
+### 2. Configure MCP in Your Project
+
+Create `.mcp.json` in your project root:
+
+```json
+{
+  "mcpServers": {
+    "notebooklm": {
+      "type": "stdio",
+      "command": "node.exe",
+      "args": ["D:\\Claude\\notebooklm-mcp-http\\dist\\stdio-http-proxy.js"],
+      "env": {
+        "NOTEBOOKLM_HTTP_URL": "http://localhost:3000"
+      }
+    }
+  }
+}
+```
+
+**Important:** Use `stdio-http-proxy.js` (NOT `index.js`)
+
+### 3. Enable the MCP Server
+
+The first time you use it, Claude Code needs to trust the `.mcp.json` servers. Either:
+
+- Restart Claude Code and accept when prompted
+- Or manually add to `~/.claude.json` in your project section:
+
+```json
+"enabledMcpjsonServers": ["notebooklm"],
+"hasTrustDialogAccepted": true,
+```
+
+### 4. Verify Configuration
 
 ```bash
-/mnt/d/Claude/notebooklm-mcp-http/scripts/mcp-wsl-helper.sh auth
+# In Claude Code, run:
+/mcp
 ```
+
+You should see `notebooklm` listed and connected.
+
+### 5. Authenticate (First Time)
+
+Ask Claude to authenticate:
+
+> "Log me in to NotebookLM"
 
 This opens Chrome on Windows for Google authentication.
 
-### 4. Ask a Question
+## Available MCP Tools
 
-```bash
-/mnt/d/Claude/notebooklm-mcp-http/scripts/mcp-wsl-helper.sh ask "What is CNV?" corpus-cnv
+| Tool                | Description                        |
+| ------------------- | ---------------------------------- |
+| `ask_question`      | Ask a question to a notebook       |
+| `list_notebooks`    | List all available notebooks       |
+| `get_health`        | Check server health status         |
+| `search_notebooks`  | Search notebooks by keyword        |
+| `get_notebook`      | Get details of a specific notebook |
+| `add_notebook`      | Add a new notebook to the library  |
+| `activate_notebook` | Set a notebook as the default      |
+
+Example usage:
+
 ```
-
-## Helper Script Reference
-
-Location: `/mnt/d/Claude/notebooklm-mcp-http/scripts/mcp-wsl-helper.sh`
-
-| Command                        | Description                                   |
-| ------------------------------ | --------------------------------------------- |
-| `start`                        | Start the server (Windows background process) |
-| `stop`                         | Stop the server                               |
-| `status`                       | Check server status and health                |
-| `health`                       | Get health status (JSON)                      |
-| `auth`                         | Launch authentication (opens Chrome)          |
-| `ask "question" [notebook_id]` | Ask a question                                |
-| `notebooks`                    | List available notebooks                      |
-
-## Direct API Calls from WSL
-
-If you need to make direct API calls without the helper script, use PowerShell:
-
-### Health Check
-
-```bash
-powershell.exe -Command "Invoke-RestMethod -Uri 'http://localhost:3000/health' | ConvertTo-Json"
+mcp__notebooklm__ask_question(question="...", notebook_id="corpus-cnv")
 ```
-
-### Ask Question
-
-```bash
-powershell.exe -Command "Invoke-RestMethod -Uri 'http://localhost:3000/ask' -Method Post -ContentType 'application/json' -Body '{\"question\": \"Your question here\", \"notebook_id\": \"corpus-cnv\"}' | ConvertTo-Json -Depth 10"
-```
-
-### List Notebooks
-
-```bash
-powershell.exe -Command "Invoke-RestMethod -Uri 'http://localhost:3000/notebooks' | ConvertTo-Json -Depth 10"
-```
-
-## Why Not Use curl Directly?
-
-WSL2 uses a virtualized network that doesn't share `localhost` with Windows by default. While there are ways to configure this (WSL mirrored networking, firewall rules), the most reliable approach is to use PowerShell's `Invoke-RestMethod` which runs on Windows and accesses `localhost:3000` directly.
 
 ## Troubleshooting
 
-### Server won't start
+### Error: "Chrome not found at /opt/google/chrome/chrome"
 
-```bash
-# Check if port 3000 is already in use
-cmd.exe /c "netstat -ano | findstr :3000"
+**Cause:** The HTTP server is running under WSL instead of Windows.
 
-# Kill the process if needed
-cmd.exe /c "taskkill /PID <PID> /F"
+**Solution:**
+
+```powershell
+# From Windows (not WSL):
+taskkill /F /IM node.exe
+cd D:\Claude\notebooklm-mcp-http
+npm run start:http
+```
+
+### Check which process is listening on port 3000
+
+```powershell
+netstat -ano | findstr :3000
+```
+
+If multiple processes are listed, there may be conflicts. Kill the unwanted ones:
+
+```powershell
+taskkill /F /PID <pid_to_kill>
+```
+
+### Test that the server works (from Windows)
+
+```powershell
+curl http://localhost:3000/health
+```
+
+Should return: `{"success":true,"data":{"status":"ok",...}}`
+
+### MCP shows "Not connected"
+
+1. Ensure the HTTP server is running on Windows
+2. Restart Claude Code after starting the HTTP server
+3. Check that `.mcp.json` uses `stdio-http-proxy.js` (not `index.js`)
+
+### Port 3000 already in use
+
+Kill all node processes and restart:
+
+```powershell
+taskkill /F /IM node.exe
+cd D:\Claude\notebooklm-mcp-http
+npm run start:http
 ```
 
 ### Authentication expired
 
-```bash
-# Check health first
-/mnt/d/Claude/notebooklm-mcp-http/scripts/mcp-wsl-helper.sh health
-
-# If authenticated: false, re-authenticate
-/mnt/d/Claude/notebooklm-mcp-http/scripts/mcp-wsl-helper.sh auth
-```
+Ask Claude: "Check NotebookLM health" or "Re-authenticate to NotebookLM"
 
 ### Chrome profile locked
 
-Close all Chrome windows and try again:
+Close all Chrome windows and restart:
 
-```bash
-cmd.exe /c "taskkill /IM chrome.exe /F"
-/mnt/d/Claude/notebooklm-mcp-http/scripts/mcp-wsl-helper.sh start
+```powershell
+taskkill /IM chrome.exe /F
 ```
+
+Then restart the HTTP server.
+
+## Configuration Reference
+
+### Project-Level Config (`.mcp.json`)
+
+Shareable via git, stored in project root:
+
+```json
+{
+  "mcpServers": {
+    "notebooklm": {
+      "type": "stdio",
+      "command": "node.exe",
+      "args": ["D:\\Claude\\notebooklm-mcp-http\\dist\\stdio-http-proxy.js"],
+      "env": {
+        "NOTEBOOKLM_HTTP_URL": "http://localhost:3000"
+      }
+    }
+  }
+}
+```
+
+### Local Config (`~/.claude.json`)
+
+Private to you, per-project settings in the `projects` section:
+
+```json
+"/mnt/d/Claude/your-project": {
+  "mcpServers": {
+    "notebooklm": {
+      "type": "stdio",
+      "command": "node.exe",
+      "args": ["D:\\Claude\\notebooklm-mcp-http\\dist\\stdio-http-proxy.js"],
+      "env": {
+        "NOTEBOOKLM_HTTP_URL": "http://localhost:3000"
+      }
+    }
+  }
+}
+```
+
+### Key Points
+
+- Use `node.exe` (Windows) not `node` (Linux)
+- Use Windows paths with double backslashes: `D:\\Claude\\...`
+- Use `stdio-http-proxy.js` to connect to the HTTP server
+- The HTTP server must be started separately on Windows
+- The `.mcp.json` servers must be enabled via `enabledMcpjsonServers`
 
 ## Data Sharing Between WSL and Windows
 
@@ -145,9 +240,55 @@ The server stores authentication and data in:
 
 This symlink ensures both environments share the same authentication state.
 
-To create the symlink (already done):
+To create the symlink (if not already done):
 
 ```bash
 rm -rf ~/.local/share/notebooklm-mcp
 ln -sf /mnt/c/Users/<user>/AppData/Local/notebooklm-mcp/Data ~/.local/share/notebooklm-mcp
 ```
+
+## Helper Scripts (Windows)
+
+The project includes PowerShell scripts for managing the server:
+
+```powershell
+# Start server with auto-restart
+.\scripts\start-server.ps1
+
+# Stop server
+.\scripts\stop-server.ps1
+
+# Check server status
+.\scripts\check-server.ps1
+```
+
+### Run in Background (Hidden Window)
+
+```powershell
+Start-Process powershell -ArgumentList "-ExecutionPolicy Bypass -File D:\Claude\notebooklm-mcp-http\scripts\start-server.ps1" -WindowStyle Hidden
+```
+
+### Windows Task Scheduler (Auto-start on Login)
+
+1. Open Task Scheduler (`taskschd.msc`)
+2. Create Basic Task: "NotebookLM MCP Server"
+3. Trigger: "When I log on"
+4. Action: Start a program
+   - Program: `powershell.exe`
+   - Arguments: `-ExecutionPolicy Bypass -WindowStyle Hidden -File "D:\Claude\notebooklm-mcp-http\scripts\start-server.ps1"`
+5. Check "Open Properties dialog" and set "Run whether user is logged on or not"
+
+## IMPORTANT: Never Run Under WSL
+
+The HTTP server must ALWAYS run on Windows native, never under WSL.
+
+**Why?**
+
+- Playwright/Chrome requires Windows Chrome, not Linux Chrome
+- WSL Chrome path (`/opt/google/chrome/chrome`) doesn't exist
+- Running under WSL will cause: `Chromium distribution 'chrome' is not found`
+
+**How to verify the server is on Windows:**
+
+1. The startup logs should show Windows paths: `C:\Users\...\AppData\...`
+2. Run `.\scripts\check-server.ps1` from PowerShell
