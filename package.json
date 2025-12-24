@@ -11,6 +11,7 @@
     "help": "node dist/cli/help.js",
     "setup-auth": "node dist/cli/setup-auth.js",
     "de-auth": "node dist/cli/de-auth.js",
+    "accounts": "node dist/cli/accounts.js",
     "start:http": "node dist/http-wrapper.js",
     "start:proxy": "node dist/stdio-http-proxy.js",
     "dev:http": "tsx watch src/http-wrapper.ts",
@@ -65,6 +66,7 @@
     "env-paths": "^3.0.0",
     "express": "^4.18.2",
     "globby": "^14.1.0",
+    "otplib": "^12.0.1",
     "patchright": "^1.48.2",
     "zod": "^3.22.0"
   },
