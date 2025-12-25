@@ -541,6 +541,18 @@ class NotebookLMMCPServer {
             );
             break;
 
+          case 'create_note':
+            result = await this.toolHandlers.handleCreateNote(
+              args as {
+                topic: string;
+                mode: 'fast' | 'deep';
+                custom_instructions?: string;
+                notebook_url?: string;
+                session_id?: string;
+              }
+            );
+            break;
+
           default:
             log.error(`❌ [MCP] Unknown tool: ${name}`);
             return {

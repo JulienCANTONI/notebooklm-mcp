@@ -26,6 +26,8 @@ import type {
   NotebookContentOverview,
   ContentDownloadResult,
   AudioGenerationOptions,
+  NoteCreationInput,
+  NoteCreationResult,
 } from './types.js';
 
 // Note: UI selectors are defined inline in methods for better maintainability
@@ -1081,5 +1083,321 @@ export class ContentManager {
       const errorMsg = error instanceof Error ? error.message : String(error);
       return { success: false, error: `Download failed: ${errorMsg}` };
     }
+  }
+
+  // ============================================================================
+  // Note Creation with Research
+  // ============================================================================
+
+  /**
+   * Create a new note using research mode (fast or deep)
+   */
+  async createNote(input: NoteCreationInput): Promise<NoteCreationResult> {
+    log.info(`📝 Creating note with ${input.mode} research: "${input.topic}"`);
+
+    try {
+      // Navigate to chat/notes area
+      await this.navigateToChat();
+
+      // Click "Add note" or similar button
+      await this.clickAddNote();
+
+      // Enter the topic/prompt
+      await this.enterNoteTopic(input.topic);
+
+      // Select research mode
+      await this.selectResearchMode(input.mode);
+
+      // Add custom instructions if provided
+      if (input.customInstructions) {
+        await this.addCustomInstructions(input.customInstructions);
+      }
+
+      // Start research/generation
+      await this.startNoteGeneration();
+
+      // Wait for completion
+      const result = await this.waitForNoteGeneration(input.mode);
+
+      return result;
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      log.error(`❌ Note creation failed: ${errorMsg}`);
+      return { success: false, mode: input.mode, error: errorMsg };
+    }
+  }
+
+  /**
+   * Navigate to chat/notes area
+   */
+  private async navigateToChat(): Promise<void> {
+    const chatSelectors = [
+      '[data-tab="chat"]',
+      'button:has-text("Chat")',
+      '.chat-tab',
+      '.notebook-chat',
+    ];
+
+    for (const selector of chatSelectors) {
+      try {
+        const el = this.page.locator(selector).first();
+        if (await el.isVisible({ timeout: 1000 })) {
+          const tagName = await el.evaluate((e) => e.tagName.toLowerCase());
+          if (tagName === 'button' || (await el.getAttribute('role')) === 'tab') {
+            await el.click();
+            await randomDelay(500, 1000);
+          }
+          log.info(`  ✅ Chat area accessed`);
+          return;
+        }
+      } catch {
+        continue;
+      }
+    }
+
+    log.info(`  ℹ️ Chat area may already be active`);
+  }
+
+  /**
+   * Click Add Note button
+   */
+  private async clickAddNote(): Promise<void> {
+    const addNoteSelectors = [
+      'button:has-text("Add note")',
+      'button:has-text("Ajouter une note")',
+      'button:has-text("New note")',
+      'button:has-text("Nouvelle note")',
+      'button[aria-label*="Add note"]',
+      'button[aria-label*="New note"]',
+      '.add-note-button',
+      '[data-action="add-note"]',
+    ];
+
+    for (const selector of addNoteSelectors) {
+      try {
+        const btn = this.page.locator(selector).first();
+        if (await btn.isVisible({ timeout: 1000 })) {
+          await realisticClick(this.page, selector, true);
+          log.info(`  ✅ Add note button clicked`);
+          await randomDelay(500, 1000);
+          return;
+        }
+      } catch {
+        continue;
+      }
+    }
+
+    throw new Error('Add note button not found');
+  }
+
+  /**
+   * Enter the note topic/prompt
+   */
+  private async enterNoteTopic(topic: string): Promise<void> {
+    const topicSelectors = [
+      'textarea[placeholder*="topic"]',
+      'textarea[placeholder*="prompt"]',
+      'textarea[placeholder*="question"]',
+      'textarea[placeholder*="sujet"]',
+      'input[placeholder*="topic"]',
+      '.note-topic-input',
+      '.prompt-input textarea',
+      'textarea',
+    ];
+
+    for (const selector of topicSelectors) {
+      try {
+        const input = await this.page.waitForSelector(selector, {
+          state: 'visible',
+          timeout: 3000,
+        });
+        if (input) {
+          await input.fill(topic);
+          log.info(`  ✅ Topic entered: "${topic.substring(0, 50)}..."`);
+          return;
+        }
+      } catch {
+        continue;
+      }
+    }
+
+    throw new Error('Topic input not found');
+  }
+
+  /**
+   * Select research mode (fast or deep)
+   */
+  private async selectResearchMode(mode: 'fast' | 'deep'): Promise<void> {
+    log.info(`  🔍 Selecting ${mode} research mode...`);
+
+    // Mode selection buttons/options
+    const modeSelectors = {
+      fast: [
+        'button:has-text("Fast")',
+        'button:has-text("Rapide")',
+        'button:has-text("Quick")',
+        '[data-mode="fast"]',
+        'input[value="fast"]',
+        '.research-mode-fast',
+      ],
+      deep: [
+        'button:has-text("Deep")',
+        'button:has-text("Approfondi")',
+        'button:has-text("Thorough")',
+        '[data-mode="deep"]',
+        'input[value="deep"]',
+        '.research-mode-deep',
+      ],
+    };
+
+    const selectors = modeSelectors[mode];
+
+    for (const selector of selectors) {
+      try {
+        const el = this.page.locator(selector).first();
+        if (await el.isVisible({ timeout: 1000 })) {
+          await el.click();
+          log.info(`  ✅ ${mode} mode selected`);
+          await randomDelay(300, 500);
+          return;
+        }
+      } catch {
+        continue;
+      }
+    }
+
+    // Try radio buttons or toggle
+    const radioSelectors = [
+      `input[type="radio"][name*="mode"][value="${mode}"]`,
+      `input[type="radio"][name*="research"][value="${mode}"]`,
+      `[role="radio"]:has-text("${mode}")`,
+    ];
+
+    for (const selector of radioSelectors) {
+      try {
+        const radio = await this.page.$(selector);
+        if (radio) {
+          await radio.click();
+          log.info(`  ✅ ${mode} mode selected (radio)`);
+          return;
+        }
+      } catch {
+        continue;
+      }
+    }
+
+    log.warning(`  ⚠️ Could not find ${mode} mode selector, proceeding with default`);
+  }
+
+  /**
+   * Start note generation
+   */
+  private async startNoteGeneration(): Promise<void> {
+    const startSelectors = [
+      'button:has-text("Generate")',
+      'button:has-text("Générer")',
+      'button:has-text("Create")',
+      'button:has-text("Créer")',
+      'button:has-text("Research")',
+      'button:has-text("Rechercher")',
+      'button[type="submit"]',
+      '.generate-button',
+      '[data-action="generate"]',
+    ];
+
+    for (const selector of startSelectors) {
+      try {
+        const btn = this.page.locator(selector).first();
+        if (await btn.isVisible({ timeout: 1000 })) {
+          await btn.click();
+          log.info(`  ✅ Generation started`);
+          await randomDelay(500, 1000);
+          return;
+        }
+      } catch {
+        continue;
+      }
+    }
+
+    // Try pressing Enter as fallback
+    await this.page.keyboard.press('Enter');
+    log.info(`  ✅ Generation started (Enter key)`);
+  }
+
+  /**
+   * Wait for note generation to complete
+   */
+  private async waitForNoteGeneration(mode: 'fast' | 'deep'): Promise<NoteCreationResult> {
+    // Deep research takes longer
+    const timeout = mode === 'deep' ? 300000 : 120000; // 5 min for deep, 2 min for fast
+    log.info(`  ⏳ Waiting for ${mode} research (timeout: ${timeout / 1000}s)...`);
+
+    const startTime = Date.now();
+
+    while (Date.now() - startTime < timeout) {
+      // Check for errors
+      const errorEl = await this.page.$('.error-message, [role="alert"]:has-text("error")');
+      if (errorEl) {
+        const errorText = await errorEl.textContent();
+        return {
+          success: false,
+          mode,
+          error: errorText || 'Research failed',
+          status: 'failed',
+        };
+      }
+
+      // Check for generated note content
+      const noteContentSelectors = [
+        '.note-content',
+        '.generated-note',
+        '.research-result',
+        '[data-note-content]',
+        '.output-content',
+      ];
+
+      for (const selector of noteContentSelectors) {
+        try {
+          const el = await this.page.$(selector);
+          if (el) {
+            const content = await el.textContent();
+            if (content && content.length > 100) {
+              // Get title if available
+              const titleEl = await this.page.$('.note-title, .research-title, h1, h2');
+              const title = titleEl ? await titleEl.textContent() : 'Research Note';
+
+              log.success(`  ✅ Note created with ${mode} research!`);
+              return {
+                success: true,
+                mode,
+                status: 'ready',
+                title: title?.trim() || 'Research Note',
+                content: content.trim(),
+              };
+            }
+          }
+        } catch {
+          continue;
+        }
+      }
+
+      // Check progress indicators
+      const progressEl = await this.page.$('[role="progressbar"], .progress-bar, .loading');
+      if (progressEl) {
+        const progress = await progressEl.getAttribute('aria-valuenow');
+        if (progress) {
+          log.info(`  ⏳ Research progress: ${progress}%`);
+        }
+      }
+
+      await this.page.waitForTimeout(3000);
+    }
+
+    return {
+      success: false,
+      mode,
+      error: `Timeout waiting for ${mode} research`,
+      status: 'failed',
+    };
   }
 }

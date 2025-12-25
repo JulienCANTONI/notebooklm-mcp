@@ -504,6 +504,42 @@ app.get('/content/audio/download', async (req: Request, res: Response) => {
   }
 });
 
+// Create note with research
+app.post('/content/notes', async (req: Request, res: Response) => {
+  try {
+    const { topic, mode, custom_instructions, notebook_url, session_id } = req.body;
+
+    if (!topic || !mode) {
+      return res.status(400).json({
+        success: false,
+        error: 'Missing required fields: topic, mode',
+      });
+    }
+
+    if (mode !== 'fast' && mode !== 'deep') {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid mode. Must be "fast" or "deep"',
+      });
+    }
+
+    const result = await toolHandlers.handleCreateNote({
+      topic,
+      mode,
+      custom_instructions,
+      notebook_url,
+      session_id,
+    });
+
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
+});
+
 // Start server
 const PORT = Number(process.env.HTTP_PORT) || 3000;
 const HOST = process.env.HTTP_HOST || '0.0.0.0';
@@ -547,6 +583,7 @@ app.listen(PORT, HOST, () => {
   log.info('   POST   /content/sources        Add source to notebook');
   log.info('   POST   /content/audio          Generate audio overview');
   log.info('   POST   /content/generate       Generate content (briefing, etc.)');
+  log.info('   POST   /content/notes          Create note with research (fast/deep)');
   log.info('   GET    /content                List sources and content');
   log.info('   GET    /content/audio/download Download audio file');
   log.info('');

@@ -43,6 +43,8 @@ import type {
   ContentDownloadResult,
   ContentType,
   SourceType,
+  NoteCreationResult,
+  ResearchMode,
 } from '../content/types.js';
 
 /**
@@ -945,6 +947,42 @@ User: "Yes" → call remove_notebook`,
             description: 'Session ID to reuse an existing session',
           },
         },
+      },
+    },
+    {
+      name: 'create_note',
+      description:
+        'Create a new note using AI research from notebook sources.\n\n' +
+        'Research Modes:\n' +
+        '- fast: Quick research, returns results in ~1-2 minutes\n' +
+        '- deep: Thorough research, returns comprehensive results in ~3-5 minutes\n\n' +
+        'The note will be based on the sources in the notebook.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          topic: {
+            type: 'string',
+            description: 'Topic or prompt for the research note',
+          },
+          mode: {
+            type: 'string',
+            enum: ['fast', 'deep'],
+            description: 'Research mode: fast (quick) or deep (thorough)',
+          },
+          custom_instructions: {
+            type: 'string',
+            description: 'Optional custom instructions for the research',
+          },
+          notebook_url: {
+            type: 'string',
+            description: 'Notebook URL. If not provided, uses the active notebook.',
+          },
+          session_id: {
+            type: 'string',
+            description: 'Session ID to reuse an existing session',
+          },
+        },
+        required: ['topic', 'mode'],
       },
     },
   ];
@@ -2306,6 +2344,73 @@ export class ToolHandlers {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       log.error(`❌ [TOOL] download_audio failed: ${errorMessage}`);
+      return {
+        success: false,
+        error: errorMessage,
+      };
+    }
+  }
+
+  /**
+   * Handle create_note tool
+   */
+  async handleCreateNote(args: {
+    topic: string;
+    mode: ResearchMode;
+    custom_instructions?: string;
+    notebook_url?: string;
+    session_id?: string;
+  }): Promise<ToolResult<NoteCreationResult>> {
+    const { topic, mode, custom_instructions, notebook_url, session_id } = args;
+
+    log.info(`🔧 [TOOL] create_note called (mode: ${mode})`);
+
+    try {
+      // Resolve notebook URL
+      const resolvedNotebookUrl =
+        notebook_url || this.library.getActiveNotebook()?.url || CONFIG.notebookUrl;
+      if (!resolvedNotebookUrl) {
+        return {
+          success: false,
+          error: 'No notebook URL provided and no active notebook set',
+        };
+      }
+
+      // Get or create session
+      const session = await this.sessionManager.getOrCreateSession(session_id, resolvedNotebookUrl);
+      const page = session.getPage();
+
+      if (!page) {
+        return {
+          success: false,
+          error: 'Could not access browser page',
+        };
+      }
+
+      // Create content manager
+      const contentManager = new ContentManager(page);
+
+      // Create note with research
+      const result = await contentManager.createNote({
+        topic,
+        mode,
+        customInstructions: custom_instructions,
+      });
+
+      if (result.success) {
+        log.success(`✅ [TOOL] create_note completed (${mode} research)`);
+      } else {
+        log.error(`❌ [TOOL] create_note failed: ${result.error}`);
+      }
+
+      return {
+        success: result.success,
+        data: result,
+        error: result.error,
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      log.error(`❌ [TOOL] create_note failed: ${errorMessage}`);
       return {
         success: false,
         error: errorMessage,

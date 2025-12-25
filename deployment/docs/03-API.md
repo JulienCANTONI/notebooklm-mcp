@@ -14,7 +14,7 @@ Or for network access: `http://<SERVER-IP>:3000`
 
 ---
 
-## 📡 Available Endpoints (27 total)
+## 📡 Available Endpoints (28 total)
 
 ### Authentication
 
@@ -56,13 +56,14 @@ Or for network access: `http://<SERVER-IP>:3000`
 
 ### Content Management (NEW)
 
-| Method | Endpoint                  | Description                          |
-| ------ | ------------------------- | ------------------------------------ |
-| `POST` | `/content/sources`        | Add source/document to notebook      |
-| `POST` | `/content/audio`          | Generate audio overview (podcast)    |
-| `POST` | `/content/generate`       | Generate briefing, study guide, etc. |
-| `GET`  | `/content`                | List sources and generated content   |
-| `GET`  | `/content/audio/download` | Download generated audio file        |
+| Method | Endpoint                  | Description                           |
+| ------ | ------------------------- | ------------------------------------- |
+| `POST` | `/content/sources`        | Add source/document to notebook       |
+| `POST` | `/content/audio`          | Generate audio overview (podcast)     |
+| `POST` | `/content/generate`       | Generate briefing, study guide, etc.  |
+| `POST` | `/content/notes`          | Create note with research (fast/deep) |
+| `GET`  | `/content`                | List sources and generated content    |
+| `GET`  | `/content/audio/download` | Download generated audio file         |
 
 ---
 
@@ -1217,6 +1218,67 @@ curl "http://localhost:3000/content/audio/download?output_path=/path/to/save/aud
   "success": true,
   "filePath": "/path/to/save/audio.wav",
   "mimeType": "audio/wav"
+}
+```
+
+---
+
+## 20. Create Note with Research
+
+### `POST /content/notes`
+
+Create a new note using AI research from notebook sources.
+
+**Request:**
+
+```bash
+# Fast research (1-2 minutes)
+curl -X POST http://localhost:3000/content/notes \
+  -H "Content-Type: application/json" \
+  -d '{
+    "topic": "Summary of key findings",
+    "mode": "fast"
+  }'
+
+# Deep research (3-5 minutes, more thorough)
+curl -X POST http://localhost:3000/content/notes \
+  -H "Content-Type: application/json" \
+  -d '{
+    "topic": "Comprehensive analysis of market trends",
+    "mode": "deep",
+    "custom_instructions": "Include statistical data and comparisons"
+  }'
+```
+
+**Body Parameters:**
+
+| Parameter             | Type   | Required | Description                      |
+| --------------------- | ------ | -------- | -------------------------------- |
+| `topic`               | string | ✅ Yes   | Topic or prompt for the research |
+| `mode`                | string | ✅ Yes   | Research mode: `fast` or `deep`  |
+| `custom_instructions` | string | ❌ No    | Custom instructions for research |
+| `notebook_url`        | string | ❌ No    | Target notebook URL              |
+| `session_id`          | string | ❌ No    | Reuse existing session           |
+
+**Research Modes:**
+
+| Mode   | Description                        | Typical Time |
+| ------ | ---------------------------------- | ------------ |
+| `fast` | Quick research, essential findings | 1-2 minutes  |
+| `deep` | Thorough research, comprehensive   | 3-5 minutes  |
+
+**Success Response (200):**
+
+```json
+{
+  "success": true,
+  "data": {
+    "success": true,
+    "mode": "deep",
+    "status": "ready",
+    "title": "Market Trends Analysis",
+    "content": "Generated research content here..."
+  }
 }
 ```
 
