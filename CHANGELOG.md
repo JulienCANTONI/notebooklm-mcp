@@ -7,6 +7,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.4.1] - 2025-12-25
+
+### Added
+
+**Research Notes Feature:**
+
+- New `create_note` tool for AI-powered research notes
+- Two research modes:
+  - `fast`: Quick research with essential findings (1-2 minutes)
+  - `deep`: Thorough research with comprehensive analysis (3-5 minutes)
+- Optional `custom_instructions` parameter for tailored research
+- New HTTP endpoint: `POST /content/notes`
+- Full MCP, HTTP, and stdio-http proxy support
+
+---
+
+## [1.4.0] - 2025-12-24
+
+### Added
+
+**Content Management Module:**
+
+- New content management system for NotebookLM notebooks
+- Source management:
+  - `add_source` - Add files, URLs, text, YouTube videos, Google Drive documents
+  - `list_content` - View all sources and generated content
+- Content generation:
+  - `generate_audio` - Create podcast-style audio overviews
+  - `generate_content` - Create briefing docs, study guides, FAQs, timelines, TOC
+  - `download_audio` - Download generated audio files
+- Full HTTP REST API support with 6 new endpoints
+- Complete documentation in `10-CONTENT-MANAGEMENT.md`
+
+**Multi-Account Management:**
+
+- New account management system for multiple Google accounts
+- Account switching: `switch_account`, `list_accounts`, `get_current_account`
+- Dedicated session per account for parallel operations
+- HTTP endpoints for account management
+- Documentation in `MULTI_ACCOUNT_SYSTEM.md`
+
+---
+
 ## [1.3.7] - 2025-12-16
 
 ### Added
