@@ -72,7 +72,6 @@ class NotebookLMMCPServer {
         capabilities: {
           tools: {},
           resources: {},
-          resourceTemplates: {},
         },
       }
     );

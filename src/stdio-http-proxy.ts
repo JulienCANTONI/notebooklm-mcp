@@ -517,7 +517,6 @@ class StdioHttpProxyServer {
         capabilities: {
           tools: {},
           resources: {},
-          resourceTemplates: {},
         },
       }
     );
