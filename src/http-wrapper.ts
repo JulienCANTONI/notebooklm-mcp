@@ -5,7 +5,8 @@
  * Allows n8n and other tools to call the server without stdio
  */
 
-import express, { Request, Response } from 'express';
+import express, { Request, Response, NextFunction } from 'express';
+import { randomUUID } from 'crypto';
 import { AuthManager } from './auth/auth-manager.js';
 import { SessionManager } from './session/session-manager.js';
 import { NotebookLibrary } from './library/notebook-library.js';
@@ -13,8 +14,27 @@ import { ToolHandlers } from './tools/index.js';
 import { AutoDiscovery } from './auto-discovery/auto-discovery.js';
 import { log } from './utils/logger.js';
 
+// Extend Express Request to include requestId
+declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  namespace Express {
+    interface Request {
+      requestId: string;
+    }
+  }
+}
+
 const app = express();
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
+
+// Request ID middleware for debugging and log correlation
+app.use((req: Request, res: Response, next: NextFunction) => {
+  // Use existing X-Request-ID header or generate a new one
+  const requestId = (req.headers['x-request-id'] as string) || randomUUID();
+  req.requestId = requestId;
+  res.setHeader('X-Request-ID', requestId);
+  next();
+});
 
 // CORS for n8n
 app.use((_req, res, next) => {
@@ -48,25 +68,31 @@ app.get('/health', async (_req: Request, res: Response) => {
 
 // Ask question
 app.post('/ask', async (req: Request, res: Response) => {
+  const reqId = req.requestId.substring(0, 8); // Short ID for logs
   try {
     const { question, session_id, notebook_id, notebook_url, show_browser } = req.body;
 
     if (!question) {
+      log.warning(`[${reqId}] /ask - Missing question`);
       return res.status(400).json({
         success: false,
         error: 'Missing required field: question',
       });
     }
 
+    log.info(`[${reqId}] /ask - "${question.substring(0, 50)}..."`);
+
     const result = await toolHandlers.handleAskQuestion(
       { question, session_id, notebook_id, notebook_url, show_browser },
       async (message, progress, total) => {
-        log.info(`Progress: ${message} (${progress}/${total})`);
+        log.info(`[${reqId}] Progress: ${message} (${progress}/${total})`);
       }
     );
 
+    log.success(`[${reqId}] /ask - Completed`);
     res.json(result);
   } catch (error) {
+    log.error(`[${reqId}] /ask - Error: ${error instanceof Error ? error.message : String(error)}`);
     res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : String(error),
@@ -187,6 +213,39 @@ app.post('/notebooks', async (req: Request, res: Response) => {
   }
 });
 
+// Search notebooks (MUST be before /notebooks/:id to avoid being shadowed)
+app.get('/notebooks/search', async (req: Request, res: Response) => {
+  try {
+    const { query } = req.query;
+    if (typeof query !== 'string' || !query.trim()) {
+      return res.status(400).json({
+        success: false,
+        error: 'Missing or invalid query parameter',
+      });
+    }
+    const result = await toolHandlers.handleSearchNotebooks({ query });
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
+});
+
+// Get library stats (MUST be before /notebooks/:id to avoid being shadowed)
+app.get('/notebooks/stats', async (_req: Request, res: Response) => {
+  try {
+    const result = await toolHandlers.handleGetLibraryStats();
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
+});
+
 // Get notebook
 app.get('/notebooks/:id', async (req: Request, res: Response) => {
   try {
@@ -229,35 +288,6 @@ app.delete('/notebooks/:id', async (req: Request, res: Response) => {
   }
 });
 
-// Search notebooks
-app.get('/notebooks/search', async (req: Request, res: Response) => {
-  try {
-    const { query } = req.query;
-    const result = await toolHandlers.handleSearchNotebooks({
-      query: query as string,
-    });
-    res.json(result);
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: error instanceof Error ? error.message : String(error),
-    });
-  }
-});
-
-// Get library stats
-app.get('/notebooks/stats', async (_req: Request, res: Response) => {
-  try {
-    const result = await toolHandlers.handleGetLibraryStats();
-    res.json(result);
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: error instanceof Error ? error.message : String(error),
-    });
-  }
-});
-
 // Auto-discover notebook metadata
 app.post('/notebooks/auto-discover', async (req: Request, res: Response) => {
   try {
@@ -271,11 +301,19 @@ app.post('/notebooks/auto-discover', async (req: Request, res: Response) => {
       });
     }
 
-    // Validate it's a NotebookLM URL
-    if (!url.includes('notebooklm.google.com')) {
+    // Validate it's a NotebookLM URL (proper URL parsing to prevent bypass)
+    try {
+      const parsedUrl = new URL(url);
+      if (parsedUrl.hostname !== 'notebooklm.google.com') {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid URL: must be a NotebookLM URL (notebooklm.google.com)',
+        });
+      }
+    } catch {
       return res.status(400).json({
         success: false,
-        error: 'Invalid URL: must be a NotebookLM URL (notebooklm.google.com)',
+        error: 'Invalid URL format',
       });
     }
 
@@ -471,8 +509,8 @@ app.get('/content', async (req: Request, res: Response) => {
     const { notebook_url, session_id } = req.query;
 
     const result = await toolHandlers.handleListContent({
-      notebook_url: notebook_url as string | undefined,
-      session_id: session_id as string | undefined,
+      notebook_url: typeof notebook_url === 'string' ? notebook_url : undefined,
+      session_id: typeof session_id === 'string' ? session_id : undefined,
     });
 
     res.json(result);
@@ -490,9 +528,9 @@ app.get('/content/audio/download', async (req: Request, res: Response) => {
     const { output_path, notebook_url, session_id } = req.query;
 
     const result = await toolHandlers.handleDownloadAudio({
-      output_path: output_path as string | undefined,
-      notebook_url: notebook_url as string | undefined,
-      session_id: session_id as string | undefined,
+      output_path: typeof output_path === 'string' ? output_path : undefined,
+      notebook_url: typeof notebook_url === 'string' ? notebook_url : undefined,
+      session_id: typeof session_id === 'string' ? session_id : undefined,
     });
 
     res.json(result);
@@ -538,6 +576,17 @@ app.post('/content/notes', async (req: Request, res: Response) => {
       error: error instanceof Error ? error.message : String(error),
     });
   }
+});
+
+// Global error handler - catches any unhandled errors in async routes
+app.use((err: Error, req: Request, res: Response, _next: NextFunction) => {
+  const reqId = req.requestId?.substring(0, 8) || 'unknown';
+  log.error(`[${reqId}] Unhandled error: ${err.message}`);
+  res.status(500).json({
+    success: false,
+    error: 'Internal server error',
+    requestId: req.requestId,
+  });
 });
 
 // Start server
@@ -597,15 +646,23 @@ app.listen(PORT, HOST, () => {
   log.dim('⏹️  Press Ctrl+C to stop');
 });
 
-// Graceful shutdown
+// Graceful shutdown with error handling
 process.on('SIGTERM', async () => {
   log.info('SIGTERM received, shutting down gracefully...');
-  await toolHandlers.cleanup();
+  try {
+    await toolHandlers.cleanup();
+  } catch (error) {
+    log.error(`Cleanup failed: ${error}`);
+  }
   process.exit(0);
 });
 
 process.on('SIGINT', async () => {
   log.info('SIGINT received, shutting down gracefully...');
-  await toolHandlers.cleanup();
+  try {
+    await toolHandlers.cleanup();
+  } catch (error) {
+    log.error(`Cleanup failed: ${error}`);
+  }
   process.exit(0);
 });

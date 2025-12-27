@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
+import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
 import {
   sleep,
   randomInt,
@@ -500,5 +500,189 @@ describe('Stealth Utils', () => {
       const result = readingPause(50);
       expect(result).toBeInstanceOf(Promise);
     });
+  });
+});
+
+describe('Stealth Utils with Page Mocks', () => {
+  let humanType: any;
+  let randomMouseMovement: any;
+  let realisticClick: any;
+  let smoothScroll: any;
+  let randomMouseJitter: any;
+  let hoverElement: any;
+  let simulateReadingPage: any;
+
+  let mockPage: any;
+  let originalStealthEnabled: boolean;
+  let originalStealthHumanTyping: boolean;
+  let originalStealthMouseMovements: boolean;
+
+  beforeEach(async () => {
+    const module = await import('../utils/stealth-utils.js');
+    humanType = module.humanType;
+    randomMouseMovement = module.randomMouseMovement;
+    realisticClick = module.realisticClick;
+    smoothScroll = module.smoothScroll;
+    randomMouseJitter = module.randomMouseJitter;
+    hoverElement = module.hoverElement;
+    simulateReadingPage = module.simulateReadingPage;
+
+    originalStealthEnabled = CONFIG.stealthEnabled;
+    originalStealthHumanTyping = CONFIG.stealthHumanTyping;
+    originalStealthMouseMovements = CONFIG.stealthMouseMovements;
+
+    mockPage = {
+      fill: jest.fn().mockResolvedValue(undefined),
+      click: jest.fn().mockResolvedValue(undefined),
+      hover: jest.fn().mockResolvedValue(undefined),
+      $: jest.fn().mockResolvedValue(null),
+      viewportSize: jest.fn().mockReturnValue({ width: 1024, height: 768 }),
+      mouse: {
+        move: jest.fn().mockResolvedValue(undefined),
+      },
+      evaluate: jest.fn().mockResolvedValue(undefined),
+    };
+  });
+
+  afterEach(() => {
+    (CONFIG as { stealthEnabled: boolean }).stealthEnabled = originalStealthEnabled;
+    (CONFIG as { stealthHumanTyping: boolean }).stealthHumanTyping = originalStealthHumanTyping;
+    (CONFIG as { stealthMouseMovements: boolean }).stealthMouseMovements =
+      originalStealthMouseMovements;
+  });
+
+  describe('humanType', () => {
+    it('should use fast fill when stealth is disabled', async () => {
+      (CONFIG as { stealthEnabled: boolean }).stealthEnabled = false;
+      await humanType(mockPage, '#input', 'test');
+      expect(mockPage.fill).toHaveBeenCalledWith('#input', 'test');
+    });
+
+    it('should use fast fill when human typing is disabled', async () => {
+      (CONFIG as { stealthEnabled: boolean }).stealthEnabled = true;
+      (CONFIG as { stealthHumanTyping: boolean }).stealthHumanTyping = false;
+      await humanType(mockPage, '#input', 'test');
+      expect(mockPage.fill).toHaveBeenCalledWith('#input', 'test');
+    });
+
+    it('should type character by character when stealth enabled', async () => {
+      (CONFIG as { stealthEnabled: boolean }).stealthEnabled = true;
+      (CONFIG as { stealthHumanTyping: boolean }).stealthHumanTyping = true;
+      await humanType(mockPage, '#input', 'hi', { wpm: 600, withTypos: false });
+      expect(mockPage.fill).toHaveBeenCalled();
+      expect(mockPage.click).toHaveBeenCalled();
+    }, 10000);
+  });
+
+  describe('randomMouseMovement', () => {
+    it('should do nothing when stealth is disabled', async () => {
+      (CONFIG as { stealthEnabled: boolean }).stealthEnabled = false;
+      await randomMouseMovement(mockPage, 100, 100);
+      expect(mockPage.mouse.move).not.toHaveBeenCalled();
+    });
+
+    it('should do nothing when mouse movements disabled', async () => {
+      (CONFIG as { stealthEnabled: boolean }).stealthEnabled = true;
+      (CONFIG as { stealthMouseMovements: boolean }).stealthMouseMovements = false;
+      await randomMouseMovement(mockPage, 100, 100);
+      expect(mockPage.mouse.move).not.toHaveBeenCalled();
+    });
+
+    it('should move mouse when stealth enabled', async () => {
+      (CONFIG as { stealthEnabled: boolean }).stealthEnabled = true;
+      (CONFIG as { stealthMouseMovements: boolean }).stealthMouseMovements = true;
+      await randomMouseMovement(mockPage, 500, 400, 5);
+      expect(mockPage.mouse.move).toHaveBeenCalled();
+    }, 10000);
+  });
+
+  describe('realisticClick', () => {
+    it('should use simple click when stealth disabled', async () => {
+      (CONFIG as { stealthEnabled: boolean }).stealthEnabled = false;
+      await realisticClick(mockPage, '#button');
+      expect(mockPage.click).toHaveBeenCalledWith('#button');
+    });
+
+    it('should move mouse before click when enabled', async () => {
+      (CONFIG as { stealthEnabled: boolean }).stealthEnabled = true;
+      (CONFIG as { stealthMouseMovements: boolean }).stealthMouseMovements = true;
+      const mockElement = {
+        boundingBox: jest.fn().mockResolvedValue({ x: 100, y: 100, width: 50, height: 30 }),
+      };
+      mockPage.$.mockResolvedValue(mockElement);
+      await realisticClick(mockPage, '#button', true);
+      expect(mockPage.click).toHaveBeenCalled();
+    }, 10000);
+  });
+
+  describe('smoothScroll', () => {
+    it('should scroll instantly when stealth disabled', async () => {
+      (CONFIG as { stealthEnabled: boolean }).stealthEnabled = false;
+      await smoothScroll(mockPage, 300, 'down');
+      expect(mockPage.evaluate).toHaveBeenCalled();
+    });
+
+    it('should scroll in steps when stealth enabled', async () => {
+      (CONFIG as { stealthEnabled: boolean }).stealthEnabled = true;
+      (CONFIG as { stealthMouseMovements: boolean }).stealthMouseMovements = true;
+      await smoothScroll(mockPage, 100, 'down');
+      expect(mockPage.evaluate).toHaveBeenCalled();
+    }, 10000);
+
+    it('should handle up direction', async () => {
+      (CONFIG as { stealthEnabled: boolean }).stealthEnabled = false;
+      await smoothScroll(mockPage, 100, 'up');
+      expect(mockPage.evaluate).toHaveBeenCalled();
+    });
+  });
+
+  describe('randomMouseJitter', () => {
+    it('should do nothing when stealth disabled', async () => {
+      (CONFIG as { stealthEnabled: boolean }).stealthEnabled = false;
+      await randomMouseJitter(mockPage, 3);
+      expect(mockPage.mouse.move).not.toHaveBeenCalled();
+    });
+
+    it('should move mouse multiple times when enabled', async () => {
+      (CONFIG as { stealthEnabled: boolean }).stealthEnabled = true;
+      (CONFIG as { stealthMouseMovements: boolean }).stealthMouseMovements = true;
+      await randomMouseJitter(mockPage, 2);
+      expect(mockPage.mouse.move).toHaveBeenCalled();
+    }, 5000);
+  });
+
+  describe('hoverElement', () => {
+    it('should hover directly when stealth disabled', async () => {
+      (CONFIG as { stealthEnabled: boolean }).stealthEnabled = false;
+      await hoverElement(mockPage, '#element');
+      expect(mockPage.hover).toHaveBeenCalledWith('#element');
+    });
+
+    it('should move mouse before hover when enabled', async () => {
+      (CONFIG as { stealthEnabled: boolean }).stealthEnabled = true;
+      (CONFIG as { stealthMouseMovements: boolean }).stealthMouseMovements = true;
+      const mockElement = {
+        boundingBox: jest.fn().mockResolvedValue({ x: 100, y: 100, width: 50, height: 30 }),
+      };
+      mockPage.$.mockResolvedValue(mockElement);
+      await hoverElement(mockPage, '#element');
+      expect(mockPage.hover).toHaveBeenCalled();
+    }, 10000);
+  });
+
+  describe('simulateReadingPage', () => {
+    it('should do nothing when stealth disabled', async () => {
+      (CONFIG as { stealthEnabled: boolean }).stealthEnabled = false;
+      await simulateReadingPage(mockPage);
+      expect(mockPage.evaluate).not.toHaveBeenCalled();
+    });
+
+    it('should scroll and pause when enabled', async () => {
+      (CONFIG as { stealthEnabled: boolean }).stealthEnabled = true;
+      (CONFIG as { stealthRandomDelays: boolean }).stealthRandomDelays = true;
+      (CONFIG as { stealthMouseMovements: boolean }).stealthMouseMovements = true;
+      await simulateReadingPage(mockPage);
+      expect(mockPage.evaluate).toHaveBeenCalled();
+    }, 30000);
   });
 });

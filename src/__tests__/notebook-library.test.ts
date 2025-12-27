@@ -106,6 +106,80 @@ describe('NotebookLibrary', () => {
       expect(mockWriteFileSync).toHaveBeenCalled();
       expect(library.listNotebooks()).toEqual([]);
     });
+
+    it('should reject JSON without notebooks array (type guard)', () => {
+      mockExistsSync.mockReturnValue(true);
+      mockReadFileSync.mockReturnValue(
+        JSON.stringify({
+          version: '1.0.0',
+          // missing notebooks array
+        })
+      );
+      mockWriteFileSync.mockImplementation(() => {});
+
+      const library = new NotebookLibrary();
+
+      // Should create new library since type guard rejected invalid format
+      expect(mockWriteFileSync).toHaveBeenCalled();
+      expect(library.listNotebooks()).toEqual([]);
+    });
+
+    it('should reject JSON without version string (type guard)', () => {
+      mockExistsSync.mockReturnValue(true);
+      mockReadFileSync.mockReturnValue(
+        JSON.stringify({
+          notebooks: [],
+          // missing version
+        })
+      );
+      mockWriteFileSync.mockImplementation(() => {});
+
+      new NotebookLibrary();
+
+      // Should create new library since type guard rejected invalid format
+      expect(mockWriteFileSync).toHaveBeenCalled();
+    });
+
+    it('should reject JSON with notebooks as non-array (type guard)', () => {
+      mockExistsSync.mockReturnValue(true);
+      mockReadFileSync.mockReturnValue(
+        JSON.stringify({
+          notebooks: 'not-an-array',
+          version: '1.0.0',
+        })
+      );
+      mockWriteFileSync.mockImplementation(() => {});
+
+      const library = new NotebookLibrary();
+
+      // Should create new library since type guard rejected invalid format
+      expect(mockWriteFileSync).toHaveBeenCalled();
+      expect(library.listNotebooks()).toEqual([]);
+    });
+
+    it('should reject null value (type guard)', () => {
+      mockExistsSync.mockReturnValue(true);
+      mockReadFileSync.mockReturnValue('null');
+      mockWriteFileSync.mockImplementation(() => {});
+
+      const library = new NotebookLibrary();
+
+      // Should create new library since type guard rejected null
+      expect(mockWriteFileSync).toHaveBeenCalled();
+      expect(library.listNotebooks()).toEqual([]);
+    });
+
+    it('should reject primitive values (type guard)', () => {
+      mockExistsSync.mockReturnValue(true);
+      mockReadFileSync.mockReturnValue('"just a string"');
+      mockWriteFileSync.mockImplementation(() => {});
+
+      const library = new NotebookLibrary();
+
+      // Should create new library since type guard rejected primitive
+      expect(mockWriteFileSync).toHaveBeenCalled();
+      expect(library.listNotebooks()).toEqual([]);
+    });
   });
 
   describe('listNotebooks', () => {

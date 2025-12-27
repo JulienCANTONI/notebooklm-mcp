@@ -142,11 +142,27 @@ export class ContentManager {
       return { success: false, error: 'File path is required' };
     }
 
-    if (!existsSync(input.filePath)) {
+    // Path traversal protection: resolve and validate the path
+    const resolvedPath = path.resolve(input.filePath);
+    const allowedDir = path.resolve(CONFIG.dataDir);
+
+    // Allow files from dataDir or current working directory
+    const cwd = path.resolve(process.cwd());
+    const isAllowed = resolvedPath.startsWith(allowedDir) || resolvedPath.startsWith(cwd);
+
+    if (!isAllowed) {
+      log.warning(`  ⚠️ Path traversal attempt blocked: ${input.filePath}`);
+      return {
+        success: false,
+        error: 'File path not allowed: must be within data directory or current working directory',
+      };
+    }
+
+    if (!existsSync(resolvedPath)) {
       return { success: false, error: `File not found: ${input.filePath}` };
     }
 
-    log.info(`  📁 Uploading file: ${path.basename(input.filePath)}`);
+    log.info(`  📁 Uploading file: ${path.basename(resolvedPath)}`);
 
     try {
       // Click on file upload option

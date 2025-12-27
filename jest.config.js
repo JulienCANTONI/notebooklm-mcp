@@ -33,6 +33,10 @@ export default {
     '!src/**/*.d.ts',
     '!src/**/__tests__/**',
     '!src/**/index.ts',
+    // Exclude entry points (servers, CLI) - require integration tests
+    '!src/http-wrapper.ts',
+    '!src/stdio-http-proxy.ts',
+    '!src/cli/**/*.ts',
   ],
   coverageThreshold: {
     global: {

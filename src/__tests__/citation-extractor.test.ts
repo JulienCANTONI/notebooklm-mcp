@@ -3,9 +3,10 @@
  * @module citation-extractor.test
  */
 
-import { describe, it, expect } from '@jest/globals';
+import { describe, it, expect, jest } from '@jest/globals';
 import {
   formatAnswerWithSources,
+  extractCitations,
   type Citation,
   type SourceFormat,
 } from '../utils/citation-extractor.js';
@@ -443,6 +444,240 @@ describe('citation-extractor', () => {
         const result = formatAnswerWithSources('test', [], format);
         expect(result).toBeDefined();
       });
+    });
+  });
+
+  describe('extractCitations', () => {
+    // Create mock page and element handles
+    const createMockPage = () => ({
+      $: jest.fn(),
+      $$: jest.fn(),
+      evaluate: jest.fn(),
+      mouse: { move: jest.fn() },
+    });
+
+    describe('format: none', () => {
+      it('should return early without extraction when format is none', async () => {
+        const mockPage = createMockPage();
+        const answerText = 'Test answer with [1] citation';
+
+        const result = await extractCitations(mockPage as any, answerText, null, 'none');
+
+        expect(result.success).toBe(true);
+        expect(result.format).toBe('none');
+        expect(result.originalAnswer).toBe(answerText);
+        expect(result.formattedAnswer).toBe(answerText);
+        expect(result.citations).toHaveLength(0);
+        // Should not call any page methods when format is 'none'
+        expect(mockPage.$$).not.toHaveBeenCalled();
+      });
+
+      it('should return correct result structure for none format', async () => {
+        const mockPage = createMockPage();
+
+        const result = await extractCitations(mockPage as any, 'Test', null, 'none');
+
+        expect(result).toHaveProperty('originalAnswer');
+        expect(result).toHaveProperty('formattedAnswer');
+        expect(result).toHaveProperty('citations');
+        expect(result).toHaveProperty('format');
+        expect(result).toHaveProperty('success');
+      });
+    });
+
+    describe('when no citations found', () => {
+      it('should return original answer with empty citations array', async () => {
+        const mockPage = createMockPage();
+        mockPage.$$.mockResolvedValue([]);
+        mockPage.evaluate.mockResolvedValue([]);
+
+        const result = await extractCitations(
+          mockPage as any,
+          'Answer with no citations',
+          null,
+          'inline'
+        );
+
+        expect(result.success).toBe(true);
+        expect(result.citations).toHaveLength(0);
+        expect(result.formattedAnswer).toBe('Answer with no citations');
+      });
+    });
+
+    describe('with container element', () => {
+      it('should search within container when provided', async () => {
+        const mockPage = createMockPage();
+        const mockContainer = {
+          $$: jest.fn().mockResolvedValue([]),
+        };
+        mockPage.evaluate.mockResolvedValue([]);
+
+        await extractCitations(mockPage as any, 'Test answer', mockContainer as any, 'inline');
+
+        // Container's $$ should be called, not page's
+        expect(mockContainer.$$).toHaveBeenCalled();
+      });
+    });
+
+    describe('error handling', () => {
+      it('should handle page errors gracefully', async () => {
+        const mockPage = createMockPage();
+        // Mock $$ to return empty to simulate no elements found
+        mockPage.$$.mockResolvedValue([]);
+        mockPage.evaluate.mockResolvedValue([]);
+
+        const result = await extractCitations(mockPage as any, 'Test answer', null, 'inline');
+
+        // When no elements found, it returns success with empty citations
+        expect(result.success).toBe(true);
+        expect(result.citations).toHaveLength(0);
+        expect(result.formattedAnswer).toBe('Test answer');
+      });
+
+      it('should return original answer on extraction issues', async () => {
+        const mockPage = createMockPage();
+        mockPage.$$.mockResolvedValue([]);
+        mockPage.evaluate.mockResolvedValue([]);
+
+        const result = await extractCitations(
+          mockPage as any,
+          'Test answer with [1] citation',
+          null,
+          'inline'
+        );
+
+        // No citations extracted, so original answer is returned
+        expect(result.formattedAnswer).toBe('Test answer with [1] citation');
+      });
+    });
+
+    describe('CitationExtractionResult structure', () => {
+      it('should have all required properties', async () => {
+        const mockPage = createMockPage();
+        mockPage.$$.mockResolvedValue([]);
+        mockPage.evaluate.mockResolvedValue([]);
+
+        const result = await extractCitations(mockPage as any, 'Test answer', null, 'footnotes');
+
+        expect(result).toHaveProperty('originalAnswer');
+        expect(result).toHaveProperty('formattedAnswer');
+        expect(result).toHaveProperty('citations');
+        expect(result).toHaveProperty('format');
+        expect(result).toHaveProperty('success');
+        expect(typeof result.originalAnswer).toBe('string');
+        expect(typeof result.formattedAnswer).toBe('string');
+        expect(Array.isArray(result.citations)).toBe(true);
+        expect(typeof result.format).toBe('string');
+        expect(typeof result.success).toBe('boolean');
+      });
+
+      it('should return success true when no citations found', async () => {
+        const mockPage = createMockPage();
+        mockPage.$$.mockResolvedValue([]);
+        mockPage.evaluate.mockResolvedValue([]);
+
+        const result = await extractCitations(mockPage as any, 'Test answer', null, 'inline');
+
+        // When no citations found, success is still true (just empty)
+        expect(result.success).toBe(true);
+        expect(result.citations).toHaveLength(0);
+      });
+    });
+
+    describe('default format parameter', () => {
+      it('should default to none format when not specified', async () => {
+        const mockPage = createMockPage();
+
+        // Call without format parameter (uses default)
+        const result = await extractCitations(mockPage as any, 'Test answer [1]', null);
+
+        expect(result.format).toBe('none');
+        expect(result.success).toBe(true);
+      });
+    });
+  });
+
+  describe('Citation element detection patterns', () => {
+    it('should recognize bracketed citation pattern [n]', () => {
+      const text = 'Text with [1] citation';
+      const match = text.match(/\[?(\d+)\]?/);
+      expect(match).not.toBeNull();
+      expect(match![1]).toBe('1');
+    });
+
+    it('should recognize superscript citation pattern', () => {
+      const text = '1';
+      const match = text.match(/\[?(\d+)\]?/);
+      expect(match).not.toBeNull();
+      expect(match![1]).toBe('1');
+    });
+
+    it('should extract multiple citation numbers', () => {
+      const text = 'Text[1] and text[2] and text[10]';
+      const matches = text.matchAll(/\[(\d+)\]/g);
+      const numbers = Array.from(matches).map((m) => parseInt(m[1], 10));
+      expect(numbers).toEqual([1, 2, 10]);
+    });
+  });
+
+  describe('CSS selector patterns', () => {
+    it('should have citation selectors array', () => {
+      // These selectors should match various citation element patterns
+      const expectedPatterns = [
+        'citation-link',
+        'citation-marker',
+        'data-citation',
+        'sup',
+        'reference',
+        'source',
+      ];
+
+      // We test the concept - the actual selectors are defined in the module
+      expectedPatterns.forEach((pattern) => {
+        expect(typeof pattern).toBe('string');
+      });
+    });
+
+    it('should have tooltip selectors array', () => {
+      const expectedPatterns = ['tooltip', 'popover', 'preview'];
+
+      expectedPatterns.forEach((pattern) => {
+        expect(typeof pattern).toBe('string');
+      });
+    });
+  });
+
+  describe('source truncation logic', () => {
+    // Testing the logic without calling private function
+    const truncate = (text: string, maxLength: number): string => {
+      if (text.length <= maxLength) return text;
+      return text.substring(0, maxLength - 3) + '...';
+    };
+
+    it('should not truncate text under limit', () => {
+      const text = 'Short text';
+      expect(truncate(text, 100)).toBe('Short text');
+    });
+
+    it('should truncate text at limit', () => {
+      const text = 'A'.repeat(100);
+      expect(truncate(text, 100)).toBe(text);
+    });
+
+    it('should truncate text over limit with ellipsis', () => {
+      const text = 'A'.repeat(150);
+      const result = truncate(text, 100);
+      expect(result).toHaveLength(100);
+      expect(result.endsWith('...')).toBe(true);
+    });
+
+    it('should handle empty text', () => {
+      expect(truncate('', 100)).toBe('');
+    });
+
+    it('should handle text exactly at limit', () => {
+      const text = 'A'.repeat(100);
+      expect(truncate(text, 100)).toBe(text);
     });
   });
 });

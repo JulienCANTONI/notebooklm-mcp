@@ -28,6 +28,8 @@ import { CONFIG, applyBrowserOptions, type BrowserOptions } from '../config.js';
 import { log } from '../utils/logger.js';
 import type {
   AskQuestionResult,
+  AskQuestionSuccess,
+  SourceCitations,
   ToolResult,
   Tool,
   ProgressCallback,
@@ -1113,6 +1115,9 @@ export class ToolHandlers {
       await sendProgress?.('Getting or creating browser session...', 1, 5);
 
       // Apply browser options temporarily
+      // NOTE: This pattern is not fully thread-safe for concurrent requests.
+      // The overrideHeadless parameter passed to getOrCreateSession handles the critical
+      // browser visibility setting. Future improvement: pass config through function chain.
       const originalConfig = { ...CONFIG };
       const effectiveConfig = applyBrowserOptions(browser_options, show_browser);
       Object.assign(CONFIG, effectiveConfig);
@@ -1147,7 +1152,18 @@ export class ToolHandlers {
         // Get session info
         const sessionInfo = session.getInfo();
 
-        const result: AskQuestionResult = {
+        // Build source citations if extracted
+        let sources: SourceCitations | undefined;
+        if (askResult.citationResult && source_format !== 'none') {
+          sources = {
+            format: source_format,
+            citations: askResult.citationResult.citations,
+            extraction_success: askResult.citationResult.success,
+            extraction_error: askResult.citationResult.error,
+          };
+        }
+
+        const result: AskQuestionSuccess = {
           status: 'success',
           question,
           answer,
@@ -1158,17 +1174,8 @@ export class ToolHandlers {
             message_count: sessionInfo.message_count,
             last_activity: sessionInfo.last_activity,
           },
+          sources,
         };
-
-        // Add source citations if extracted
-        if (askResult.citationResult && source_format !== 'none') {
-          result.sources = {
-            format: source_format,
-            citations: askResult.citationResult.citations,
-            extraction_success: askResult.citationResult.success,
-            extraction_error: askResult.citationResult.error,
-          };
-        }
 
         // Progress: Complete
         await sendProgress?.('Question answered successfully!', 5, 5);

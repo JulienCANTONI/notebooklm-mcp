@@ -32,7 +32,7 @@ export class RateLimitError extends Error {
  * Especially useful when upgrading from old installation (notebooklm-mcp-nodejs).
  */
 export class AuthenticationError extends Error {
-  suggestCleanup: boolean;
+  readonly suggestCleanup: boolean;
 
   constructor(message: string, suggestCleanup: boolean = false) {
     super(message);

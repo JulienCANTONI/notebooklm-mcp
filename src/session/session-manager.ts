@@ -24,6 +24,7 @@ export class SessionManager {
   private authManager: AuthManager;
   private sharedContextManager: SharedContextManager;
   private sessions: Map<string, BrowserSession> = new Map();
+  private pendingSessions: Set<string> = new Set(); // Track sessions being created to prevent race conditions
   private maxSessions: number;
   private sessionTimeout: number;
   private cleanupInterval?: NodeJS.Timeout;
@@ -114,23 +115,45 @@ export class SessionManager {
       }
     }
 
-    // Check if we need to free up space
-    if (this.sessions.size >= this.maxSessions) {
-      log.warning(`⚠️  Max sessions (${this.maxSessions}) reached, cleaning up...`);
-      const freed = await this.cleanupOldestSession();
-      if (!freed) {
-        throw new Error(
-          `Max sessions (${this.maxSessions}) reached and no inactive sessions to clean up`
-        );
+    // Check if session is being created by another concurrent request (race condition prevention)
+    if (this.pendingSessions.has(sessionId)) {
+      log.warning(`⏳ Session ${sessionId} is being created, waiting...`);
+      // Wait up to 30 seconds for the session to be created
+      for (let i = 0; i < 60; i++) {
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        if (this.sessions.has(sessionId)) {
+          const session = this.sessions.get(sessionId)!;
+          session.updateActivity();
+          log.success(`♻️  Reusing session ${sessionId} after wait`);
+          return session;
+        }
+        if (!this.pendingSessions.has(sessionId)) {
+          break; // Session creation failed, try again
+        }
       }
     }
 
-    // Create new session
-    log.info(`🆕 Creating new session ${sessionId}...`);
-    if (overrideHeadless !== undefined) {
-      log.info(`  Show browser: ${overrideHeadless}`);
-    }
+    // Mark session as pending to prevent concurrent creation
+    this.pendingSessions.add(sessionId);
+
     try {
+      // Check if we need to free up space
+      if (this.sessions.size >= this.maxSessions) {
+        log.warning(`⚠️  Max sessions (${this.maxSessions}) reached, cleaning up...`);
+        const freed = await this.cleanupOldestSession();
+        if (!freed) {
+          throw new Error(
+            `Max sessions (${this.maxSessions}) reached and no inactive sessions to clean up`
+          );
+        }
+      }
+
+      // Create new session
+      log.info(`🆕 Creating new session ${sessionId}...`);
+      if (overrideHeadless !== undefined) {
+        log.info(`  Show browser: ${overrideHeadless}`);
+      }
+
       // Ensure the shared context exists (ONE fingerprint for all sessions!)
       await this.sharedContextManager.getOrCreateContext(overrideHeadless);
 
@@ -151,6 +174,9 @@ export class SessionManager {
     } catch (error) {
       log.error(`❌ Failed to create session: ${error}`);
       throw error;
+    } finally {
+      // Always remove from pending, whether success or failure
+      this.pendingSessions.delete(sessionId);
     }
   }
 

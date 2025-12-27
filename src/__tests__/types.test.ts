@@ -2,6 +2,9 @@ import { describe, it, expect } from '@jest/globals';
 import type {
   SessionInfo,
   AskQuestionResult,
+  AskQuestionSuccess,
+  AskQuestionError,
+  AskSessionInfo,
   ToolResult,
   Tool,
   TypingOptions,
@@ -81,7 +84,7 @@ describe('Type Definitions', () => {
 
   describe('AskQuestionResult', () => {
     it('should accept successful result', () => {
-      const result: AskQuestionResult = {
+      const result: AskQuestionSuccess = {
         status: 'success',
         question: 'What is the capital of France?',
         answer: 'Paris is the capital of France.',
@@ -96,11 +99,10 @@ describe('Type Definitions', () => {
 
       expect(result.status).toBe('success');
       expect(result.answer).toBeDefined();
-      expect(result.error).toBeUndefined();
     });
 
     it('should accept error result', () => {
-      const result: AskQuestionResult = {
+      const result: AskQuestionError = {
         status: 'error',
         question: 'What is the capital of France?',
         error: 'Failed to get answer',
@@ -109,23 +111,42 @@ describe('Type Definitions', () => {
 
       expect(result.status).toBe('error');
       expect(result.error).toBeDefined();
-      expect(result.answer).toBeUndefined();
     });
 
-    it('should accept result without session info', () => {
-      const result: AskQuestionResult = {
+    it('should discriminate between success and error', () => {
+      const successResult: AskQuestionResult = {
         status: 'success',
         question: 'Test question',
         answer: 'Test answer',
         notebook_url: 'https://notebooklm.google.com/notebook/abc',
+        session_id: 'session-123',
+        session_info: {
+          age_seconds: 60,
+          message_count: 1,
+          last_activity: Date.now(),
+        },
       };
 
-      expect(result.session_id).toBeUndefined();
-      expect(result.session_info).toBeUndefined();
+      const errorResult: AskQuestionResult = {
+        status: 'error',
+        question: 'Test question',
+        error: 'Some error',
+        notebook_url: 'https://notebooklm.google.com/notebook/abc',
+      };
+
+      // TypeScript discriminates based on status
+      if (successResult.status === 'success') {
+        expect(successResult.session_id).toBeDefined();
+        expect(successResult.session_info).toBeDefined();
+      }
+
+      if (errorResult.status === 'error') {
+        expect(errorResult.error).toBeDefined();
+      }
     });
 
     it('should handle empty question', () => {
-      const result: AskQuestionResult = {
+      const result: AskQuestionError = {
         status: 'error',
         question: '',
         error: 'Question is required',
@@ -138,14 +159,20 @@ describe('Type Definitions', () => {
 
     it('should handle long answers', () => {
       const longAnswer = 'A'.repeat(10000);
-      const result: AskQuestionResult = {
+      const result: AskQuestionSuccess = {
         status: 'success',
         question: 'Tell me a long story',
         answer: longAnswer,
         notebook_url: 'https://notebooklm.google.com/notebook/abc',
+        session_id: 'session-123',
+        session_info: {
+          age_seconds: 60,
+          message_count: 1,
+          last_activity: Date.now(),
+        },
       };
 
-      expect(result.answer?.length).toBe(10000);
+      expect(result.answer.length).toBe(10000);
     });
   });
 
@@ -492,22 +519,23 @@ describe('Type Definitions', () => {
 
   describe('Type compatibility', () => {
     it('should allow session info in ask result', () => {
-      const sessionInfo: AskQuestionResult['session_info'] = {
+      const sessionInfo: AskSessionInfo = {
         age_seconds: 60,
         message_count: 5,
         last_activity: Date.now(),
       };
 
-      const result: AskQuestionResult = {
+      const result: AskQuestionSuccess = {
         status: 'success',
         question: 'Test',
         answer: 'Answer',
         notebook_url: 'https://example.com',
+        session_id: 'session-123',
         session_info: sessionInfo,
       };
 
       expect(result.session_info).toBeDefined();
-      expect(result.session_info?.age_seconds).toBe(60);
+      expect(result.session_info.age_seconds).toBe(60);
     });
 
     it('should allow ToolResult with SessionInfo', () => {

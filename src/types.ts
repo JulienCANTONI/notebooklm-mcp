@@ -40,40 +40,78 @@ export interface SessionInfo {
 }
 
 /**
- * Result from asking a question
+ * Source citations data
  */
-export interface AskQuestionResult {
-  status: 'success' | 'error';
-  question: string;
-  answer?: string;
-  error?: string;
-  notebook_url: string;
-  session_id?: string;
-  session_info?: {
-    age_seconds: number;
-    message_count: number;
-    last_activity: number;
-  };
-  /** Extracted source citations (when source_format is not 'none') */
-  sources?: {
-    /** Format used for extraction */
-    format: SourceFormat;
-    /** List of extracted citations */
-    citations: Citation[];
-    /** Whether extraction was successful */
-    extraction_success: boolean;
-    /** Error message if extraction failed */
-    extraction_error?: string;
-  };
+export interface SourceCitations {
+  /** Format used for extraction */
+  format: SourceFormat;
+  /** List of extracted citations */
+  citations: Citation[];
+  /** Whether extraction was successful */
+  extraction_success: boolean;
+  /** Error message if extraction failed */
+  extraction_error?: string;
 }
+
+/**
+ * Session info included in successful responses
+ */
+export interface AskSessionInfo {
+  age_seconds: number;
+  message_count: number;
+  last_activity: number;
+}
+
+/**
+ * Successful question result
+ */
+export interface AskQuestionSuccess {
+  status: 'success';
+  question: string;
+  answer: string;
+  notebook_url: string;
+  session_id: string;
+  session_info: AskSessionInfo;
+  /** Extracted source citations (when source_format is not 'none') */
+  sources?: SourceCitations;
+}
+
+/**
+ * Error question result
+ */
+export interface AskQuestionError {
+  status: 'error';
+  question: string;
+  error: string;
+  notebook_url: string;
+}
+
+/**
+ * Result from asking a question (discriminated union)
+ * Use `result.status` to discriminate between success and error
+ */
+export type AskQuestionResult = AskQuestionSuccess | AskQuestionError;
 
 /**
  * Tool call result for MCP (generic wrapper for tool responses)
  */
-export interface ToolResult<T = any> {
+export interface ToolResult<T = unknown> {
   success: boolean;
   data?: T;
   error?: string;
+}
+
+/**
+ * JSON Schema property definition
+ */
+export interface JsonSchemaProperty {
+  type: string;
+  description?: string;
+  enum?: readonly string[];
+  items?: JsonSchemaProperty | { type: string };
+  properties?: Record<string, JsonSchemaProperty>;
+  required?: string[];
+  default?: unknown;
 }
 
 /**
@@ -85,7 +123,7 @@ export interface Tool {
   description: string;
   inputSchema: {
     type: 'object';
-    properties: Record<string, any>;
+    properties: Record<string, JsonSchemaProperty>;
     required?: string[];
   };
 }
@@ -119,10 +157,11 @@ export type ProgressCallback = (
 ) => Promise<void>;
 
 /**
- * Global state for the server
+ * Global state for the server (legacy - prefer direct imports)
+ * @deprecated Use direct imports of SessionManager and AuthManager instead
  */
 export interface ServerState {
-  playwright: any;
-  sessionManager: any;
-  authManager: any;
+  playwright: unknown;
+  sessionManager: unknown;
+  authManager: unknown;
 }

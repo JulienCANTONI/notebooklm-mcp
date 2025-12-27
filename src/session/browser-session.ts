@@ -360,11 +360,19 @@ export class BrowserSession {
       }
 
       if (await applyToPage()) {
-        this.page?.off('framenavigated', handleNavigation);
+        cleanup();
       }
     };
 
+    // Cleanup function to remove listener and prevent memory leak
+    const cleanup = () => {
+      this.page?.off('framenavigated', handleNavigation);
+      this.page?.off('close', cleanup);
+    };
+
     this.page.on('framenavigated', handleNavigation);
+    // Also cleanup if page closes before restoration completes
+    this.page.once('close', cleanup);
   }
 
   /**

@@ -38,15 +38,35 @@ export class NotebookLibrary {
   }
 
   /**
+   * Type guard to validate Library structure from JSON
+   */
+  private isValidLibrary(value: unknown): value is Library {
+    if (typeof value !== 'object' || value === null) {
+      return false;
+    }
+    const obj = value as Record<string, unknown>;
+    return (
+      'notebooks' in obj &&
+      Array.isArray(obj.notebooks) &&
+      'version' in obj &&
+      typeof obj.version === 'string'
+    );
+  }
+
+  /**
    * Load library from disk, or create default if not exists
    */
   private loadLibrary(): Library {
     try {
       if (fs.existsSync(this.libraryPath)) {
         const data = fs.readFileSync(this.libraryPath, 'utf-8');
-        const library = JSON.parse(data) as Library;
-        log.success(`  ✅ Loaded library with ${library.notebooks.length} notebooks`);
-        return library;
+        const parsed: unknown = JSON.parse(data);
+        if (!this.isValidLibrary(parsed)) {
+          log.warning(`  ⚠️  Invalid library format, creating new library`);
+          throw new Error('Invalid library format');
+        }
+        log.success(`  ✅ Loaded library with ${parsed.notebooks.length} notebooks`);
+        return parsed;
       }
     } catch (error) {
       log.warning(`  ⚠️  Failed to load library: ${error}`);
