@@ -53,6 +53,28 @@ const PLACEHOLDER_SNIPPETS = [
   'please wait',
 ];
 
+// Error messages from NotebookLM that indicate failure
+const ERROR_SNIPPETS = [
+  "le système n'a pas pu répondre", // French: The system could not respond
+  'the system could not respond',
+  "le système n'a pas réussi",
+  'the system failed',
+  'an error occurred',
+  'une erreur est survenue',
+  'try again later',
+  'réessayez plus tard',
+  'rate limit',
+  'too many requests',
+];
+
+/**
+ * Check if text is an error message from NotebookLM
+ */
+export function isErrorMessage(text: string): boolean {
+  const lower = text.toLowerCase();
+  return ERROR_SNIPPETS.some((snippet) => lower.includes(snippet));
+}
+
 // ============================================================================
 // Helper Functions
 // ============================================================================
@@ -303,20 +325,32 @@ async function extractLatestText(
   debug: boolean,
   pollCount: number
 ): Promise<string | null> {
+  // Scroll to bottom periodically to reveal new messages (every 5 polls)
+  if (pollCount % 5 === 0) {
+    try {
+      await page.evaluate(`
+        (() => {
+          const containers = document.querySelectorAll('.chat-scroll-container, .messages-container, [class*="scroll"]');
+          containers.forEach(c => { c.scrollTop = c.scrollHeight; });
+          window.scrollTo(0, document.body.scrollHeight);
+        })()
+      `);
+    } catch {
+      // Ignore scroll errors
+    }
+  }
+
   // Try the primary selector first (most specific for NotebookLM)
   const primarySelector = '.to-user-container';
   try {
     const containers = await page.$$(primarySelector);
     const totalContainers = containers.length;
 
-    // Early exit if no new containers possible
-    if (totalContainers <= knownHashes.size) {
-      if (debug && pollCount % 5 === 0) {
-        log.dim(
-          `⏭️ [EXTRACT] No new containers (${totalContainers} total, ${knownHashes.size} known)`
-        );
-      }
-      return null;
+    // Log container count (but don't early exit - always check content)
+    if (debug && pollCount % 5 === 0) {
+      log.dim(
+        `⏭️ [EXTRACT] Checking ${totalContainers} containers (${knownHashes.size} known hashes)`
+      );
     }
 
     if (containers.length > 0) {

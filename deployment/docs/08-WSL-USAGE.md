@@ -278,6 +278,73 @@ Start-Process powershell -ArgumentList "-ExecutionPolicy Bypass -File D:\Claude\
    - Arguments: `-ExecutionPolicy Bypass -WindowStyle Hidden -File "D:\Claude\notebooklm-mcp-http\scripts\start-server.ps1"`
 5. Check "Open Properties dialog" and set "Run whether user is logged on or not"
 
+## Authentication Procedure (TOTP/2FA)
+
+If authentication expires, follow this procedure **from Windows**:
+
+### Step 1: Kill existing processes
+
+```powershell
+taskkill /F /IM chrome.exe
+taskkill /F /IM node.exe
+```
+
+### Step 2: Run accounts test with visible browser
+
+```powershell
+cd D:\Claude\notebooklm-mcp-http
+npm run accounts test account-1766565732376 -- --show
+```
+
+This will:
+
+- Open Chrome with the account profile
+- Auto-login with email/password/TOTP
+- Navigate to NotebookLM home page
+- Save authentication state
+
+**Note:** "TOTP input field not found" is OK if Google skips 2FA (trusted device).
+
+### Step 3: Sync profile to main location
+
+```powershell
+# From PowerShell or WSL:
+copy C:\Users\romai\AppData\Local\notebooklm-mcp\Data\accounts\account-1766565732376\browser_state\* C:\Users\romai\AppData\Local\notebooklm-mcp\Data\browser_state\
+```
+
+Or from WSL:
+
+```bash
+cp /mnt/c/Users/romai/AppData/Local/notebooklm-mcp/Data/accounts/account-*/browser_state/* /mnt/c/Users/romai/AppData/Local/notebooklm-mcp/Data/browser_state/
+```
+
+### Step 4: Start HTTP server
+
+```powershell
+cd D:\Claude\notebooklm-mcp-http
+npm run start:http
+```
+
+## Quick Test Commands (from WSL)
+
+```bash
+# Start server on Windows (from WSL)
+cmd.exe /c "cd /d D:\\Claude\\notebooklm-mcp-http && start /B node dist/http-wrapper.js"
+
+# Check health (from WSL via Windows curl)
+cmd.exe /c "curl http://localhost:3000/health"
+
+# Ask a question
+cmd.exe /c 'curl -s -X POST http://localhost:3000/ask -H "Content-Type: application/json" -d "{\"question\": \"Test\", \"notebook_id\": \"notebook-1\"}"'
+```
+
+## Available Notebooks
+
+| ID         | Name                            | URL                                    | Topics             |
+| ---------- | ------------------------------- | -------------------------------------- | ------------------ |
+| notebook-1 | CNV (Communication NonViolente) | `74912e55-34a4-4027-bdcc-8e89badd0efd` | CNV, empathy, OSBD |
+| notebook-2 | Thérapie IFS                    | `3e79b7be-9a72-4ac7-aaf7-ac3f450fa96f` | IFS, therapy       |
+
 ## IMPORTANT: Never Run Under WSL
 
 The HTTP server must ALWAYS run on Windows native, never under WSL.

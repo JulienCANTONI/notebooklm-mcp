@@ -462,6 +462,13 @@ export class AutoLoginManager {
         }
       }
 
+      // Before failing, check if we're already on NotebookLM (Google skipped 2FA)
+      const currentUrl = page.url();
+      if (currentUrl.includes('notebooklm.google.com')) {
+        log.info('  ✅ 2FA was skipped (trusted device), already on NotebookLM');
+        return { success: true };
+      }
+
       return { success: false, error: 'TOTP input field not found' };
     } catch (error) {
       return { success: false, error: `TOTP failed: ${error}` };

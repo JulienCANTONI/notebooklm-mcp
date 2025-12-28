@@ -10,7 +10,7 @@ dist/
 .env.local
 
 # Data directories (auth & sessions)
-# CRITIQUE: Contient cookies Google et sessions - NE JAMAIS COMMITER
+# CRITICAL: Contains Google cookies and sessions - NEVER COMMIT
 Data/
 data/
 browser_state/
@@ -55,3 +55,33 @@ venv/
 
 # Test coverage output
 coverage/
+
+# =============================================================================
+# LOCAL TEST CONFIGURATION
+# =============================================================================
+# These files contain YOUR specific test data (notebook UUIDs, account IDs, etc.)
+# They are NEVER overwritten by git pull - your local config is safe.
+#
+# Setup: cp tests/test-config.example.ts tests/test-config.local.ts
+# =============================================================================
+
+# Local configuration files (contain real UUIDs/credentials)
+*.local.ts
+*.local.js
+
+# Temporary test files
+temp-*.ts
+temp-*.js
+
+# Ad-hoc test scripts in project root (use tests/ directory instead)
+test-*.ps1
+test-*.json
+
+# Account setup scripts with real credentials
+scripts/add-totp.ts
+add-account.ts
+
+# Temporary test output files
+accounts_test.txt
+server_output.txt
+*_output.txt
