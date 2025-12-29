@@ -33,11 +33,11 @@
 - **Study Guide** — Learning cards and key concepts
 - **FAQ** — Frequently asked questions
 - **Timeline** — Chronological events
-- **Research Notes** — AI-powered research with fast/deep modes
 
-### Source Management
+### Source & Note Management
 
 - **Add sources**: Files (PDF, TXT, DOCX), URLs, Text, YouTube videos, Google Drive
+- **Add notes**: AI-powered research notes with fast/deep modes
 - **List content**: View all sources and generated artifacts
 - **Download audio**: Export generated audio files
 
@@ -111,23 +111,13 @@ curl -X POST http://localhost:3000/ask \
 
 ---
 
-## Architecture
-
-```
-Your Task → Agent/n8n → MCP/HTTP Server → Chrome Automation → NotebookLM → Gemini 2.5 → Your Docs
-                                                                    ↓
-                                                            Accurate Output
-```
-
----
-
 ## Roadmap
 
 See [ROADMAP.md](./ROADMAP.md) for planned features and version history.
 
 **Latest releases:**
 
-- **v1.4.1** — Research notes with fast/deep modes
+- **v1.4.1** — Add notes with fast/deep research modes
 - **v1.4.0** — Content management (sources, audio, generation) + Multi-account
 - **v1.3.7** — Source citation extraction (5 formats)
 - **v1.3.6** — Multi-interface mode via stdio-HTTP proxy
@@ -151,6 +141,10 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
 ## License
 
 MIT — Use freely in your projects. See [LICENSE](./LICENSE).
+
+## Author
+
+**Romain Peyrichou** — [@roomi-fields](https://github.com/roomi-fields)
 
 ---
 
