@@ -2,22 +2,20 @@
 
 This document tracks planned features, recent implementations, and future ideas for the NotebookLM MCP Server.
 
-## Current Version: v1.4.0
+## Current Version: v1.4.1
 
 ---
 
 ## Upcoming
 
-### v1.5.0 - Note & Source Management
+### v1.5.0 - Studio Complete
 
-**Priority: High** - Complete NotebookLM content management.
+**Priority: High** - Complete NotebookLM Studio features.
 
-**Source Discovery:**
+**Document Download:**
 
-- [ ] Discover sources from Web (Fast mode)
-- [ ] Discover sources from Web (Deep mode)
-- [ ] Discover sources from Google Drive (Fast mode)
-- [ ] Discover sources from Google Drive (Deep mode)
+- [ ] Download generated documents (briefing, study guide, FAQ, timeline, TOC)
+- [ ] Export format options (PDF, Markdown, TXT)
 
 **Note Management:**
 
@@ -29,7 +27,22 @@ This document tracks planned features, recent implementations, and future ideas 
 
 **Source Management:**
 
-- [ ] Delete sources
+- [ ] Delete individual sources
+- [ ] Bulk delete sources
+- [ ] Edit source metadata
+
+**Source Discovery:**
+
+- [ ] Discover sources from Web (Fast mode)
+- [ ] Discover sources from Web (Deep mode)
+- [ ] Discover sources from Google Drive (Fast mode)
+- [ ] Discover sources from Google Drive (Deep mode)
+
+**Audio Enhancements:**
+
+- [ ] Customize audio voices/hosts
+- [ ] Audio language selection
+- [ ] Re-generate audio with different parameters
 
 ---
 
