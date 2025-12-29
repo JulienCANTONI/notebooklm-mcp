@@ -12,10 +12,11 @@ This document tracks planned features, recent implementations, and future ideas 
 
 **Priority: High** - Complete NotebookLM Studio features.
 
-**Document Download:**
+**Document Download (PRIORITY):**
 
-- [ ] Download generated documents (briefing, study guide, FAQ, timeline, TOC)
-- [ ] Export format options (PDF, Markdown, TXT)
+- [ ] Download ALL generated content types (briefing, study guide, FAQ, timeline, TOC)
+- [ ] Support all export formats offered by NotebookLM UI (dynamic detection)
+- [ ] Endpoint: `GET /content/download?type=study_guide&format=...`
 
 **Note Management:**
 
