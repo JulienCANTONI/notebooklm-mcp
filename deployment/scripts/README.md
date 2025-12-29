@@ -115,7 +115,7 @@ Test 2: List Notebooks
 
 Test 3: Ask Question (authentication + notebook required)
   POST http://localhost:3000/ask
-  Using notebook: cnv
+  Using notebook: my-notebook
   ✅ PASS - Question processed
      Answer length: 42 chars
      Session ID: abc123

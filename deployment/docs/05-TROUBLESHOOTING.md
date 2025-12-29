@@ -384,7 +384,7 @@ curl http://localhost:3000/health  # authenticated: true?
 # 7. Full test?
 curl -X POST http://localhost:3000/ask `
   -H "Content-Type: application/json" `
-  -d '{"question":"test","notebook_id":"cnv"}'
+  -d '{"question":"test","notebook_id":"my-notebook"}'
 ```
 
 If all checks pass but problem persists → GitHub Issues

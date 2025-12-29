@@ -267,10 +267,10 @@ npm run start:http
 ```powershell
 # Prepare notebook data
 $body = @{
-    url = "https://notebooklm.google.com/notebook/74912e55-34a4-4027-bdcc-8e89badd0efd"
-    name = "CNV"
-    description = "Communication NonViolente"
-    topics = @("communication", "empathie", "besoins")
+    url = "https://notebooklm.google.com/notebook/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+    name = "My Notebook"
+    description = "A sample notebook"
+    topics = @("topic1", "topic2", "topic3")
 } | ConvertTo-Json
 
 # Add the notebook (automatic validation)
@@ -314,20 +314,20 @@ code "$env:LOCALAPPDATA\notebooklm-mcp\Data\library.json"
 {
   "notebooks": [
     {
-      "id": "cnv",
-      "url": "https://notebooklm.google.com/notebook/74912e55-34a4-4027-bdcc-8e89badd0efd",
-      "name": "CNV",
-      "description": "Communication NonViolente",
-      "topics": ["communication", "empathie", "besoins"],
+      "id": "my-notebook",
+      "url": "https://notebooklm.google.com/notebook/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+      "name": "My Notebook",
+      "description": "A sample notebook",
+      "topics": ["topic1", "topic2", "topic3"],
       "content_types": ["documentation", "examples"],
-      "use_cases": ["Learning about CNV"],
+      "use_cases": ["Learning about the topic"],
       "added_at": "2025-11-22T08:49:16.735Z",
       "last_used": "2025-11-22T08:49:16.735Z",
       "use_count": 0,
       "tags": []
     }
   ],
-  "active_notebook_id": "cnv",
+  "active_notebook_id": "my-notebook",
   "last_modified": "2025-11-22T08:49:16.735Z",
   "version": "1.0.0"
 }
@@ -350,8 +350,8 @@ Invoke-RestMethod -Uri "http://localhost:3000/notebooks"
   "data": {
     "notebooks": [
       {
-        "id": "cnv",
-        "name": "CNV",
+        "id": "my-notebook",
+        "name": "My Notebook",
         "url": "https://notebooklm.google.com/notebook/xxx",
         "active": true
       }
@@ -514,7 +514,7 @@ If `"authenticated": true`, everything works! ✅
 ```powershell
 curl -X POST http://localhost:3000/ask `
   -H "Content-Type: application/json" `
-  -d '{"question":"Liste 1 besoin en CNV","notebook_id":"cnv"}'
+  -d '{"question":"What is the main topic?","notebook_id":"my-notebook"}'
 ```
 
 **Wait 30-60 seconds** (NotebookLM generation time).
@@ -526,8 +526,8 @@ curl -X POST http://localhost:3000/ask `
   "success": true,
   "data": {
     "status": "success",
-    "question": "Liste 1 besoin en CNV",
-    "answer": "Votre requête concernant la liste des besoins...",
+    "question": "What is the main topic?",
+    "answer": "Based on the sources, the main topic is...",
     "session_id": "abc123",
     "notebook_url": "https://notebooklm.google.com/notebook/...",
     "session_info": {

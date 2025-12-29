@@ -74,8 +74,10 @@ temp-*.ts
 temp-*.js
 
 # Ad-hoc test scripts in project root (use tests/ directory instead)
-test-*.ps1
-test-*.json
+/test-*.ps1
+/test-*.json
+# But allow test scripts in tests/e2e/
+!tests/e2e/test-*.ps1
 
 # Account setup scripts with real credentials
 scripts/add-totp.ts

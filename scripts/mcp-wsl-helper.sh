@@ -140,7 +140,7 @@ case "$1" in
         echo ""
         echo "Examples:"
         echo "  $0 start"
-        echo "  $0 ask \"What is CNV?\" corpus-cnv"
+        echo "  $0 ask \"What is the main topic?\" my-notebook"
         echo "  $0 status"
         ;;
 esac

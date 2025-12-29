@@ -224,7 +224,7 @@ The server verifies that the URL is in NotebookLM format:
 ✅ **Valid:**
 
 ```
-https://notebooklm.google.com/notebook/74912e55-34a4-4027-bdcc-8e89badd0efd
+https://notebooklm.google.com/notebook/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 ```
 
 ❌ **Invalid:**
@@ -579,7 +579,7 @@ curl -X POST http://localhost:3000/notebooks \
 curl -X DELETE http://localhost:3000/notebooks/parents-numerique
 
 # Option 3: Update the existing one (coming soon)
-# PUT /notebooks/cnv
+# PUT /notebooks/my-notebook
 ```
 
 ### Problem: Corrupted library.json

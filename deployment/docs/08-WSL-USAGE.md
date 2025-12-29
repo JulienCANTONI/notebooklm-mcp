@@ -115,7 +115,7 @@ This opens Chrome on Windows for Google authentication.
 Example usage:
 
 ```
-mcp__notebooklm__ask_question(question="...", notebook_id="corpus-cnv")
+mcp__notebooklm__ask_question(question="...", notebook_id="my-notebook")
 ```
 
 ## Troubleshooting
@@ -293,7 +293,7 @@ taskkill /F /IM node.exe
 
 ```powershell
 cd D:\Claude\notebooklm-mcp-http
-npm run accounts test account-1766565732376 -- --show
+npm run accounts test account-XXXXXXXXXXXXX -- --show
 ```
 
 This will:
@@ -309,13 +309,13 @@ This will:
 
 ```powershell
 # From PowerShell or WSL:
-copy C:\Users\romai\AppData\Local\notebooklm-mcp\Data\accounts\account-1766565732376\browser_state\* C:\Users\romai\AppData\Local\notebooklm-mcp\Data\browser_state\
+copy C:\Users\USERNAME\AppData\Local\notebooklm-mcp\Data\accounts\account-XXXXXXXXXXXXX\browser_state\* C:\Users\USERNAME\AppData\Local\notebooklm-mcp\Data\browser_state\
 ```
 
 Or from WSL:
 
 ```bash
-cp /mnt/c/Users/romai/AppData/Local/notebooklm-mcp/Data/accounts/account-*/browser_state/* /mnt/c/Users/romai/AppData/Local/notebooklm-mcp/Data/browser_state/
+cp /mnt/c/Users/USERNAME/AppData/Local/notebooklm-mcp/Data/accounts/account-*/browser_state/* /mnt/c/Users/USERNAME/AppData/Local/notebooklm-mcp/Data/browser_state/
 ```
 
 ### Step 4: Start HTTP server
@@ -340,10 +340,12 @@ cmd.exe /c 'curl -s -X POST http://localhost:3000/ask -H "Content-Type: applicat
 
 ## Available Notebooks
 
-| ID         | Name                            | URL                                    | Topics             |
-| ---------- | ------------------------------- | -------------------------------------- | ------------------ |
-| notebook-1 | CNV (Communication NonViolente) | `74912e55-34a4-4027-bdcc-8e89badd0efd` | CNV, empathy, OSBD |
-| notebook-2 | Thérapie IFS                    | `3e79b7be-9a72-4ac7-aaf7-ac3f450fa96f` | IFS, therapy       |
+| ID         | Name                 | URL                                    | Topics                |
+| ---------- | -------------------- | -------------------------------------- | --------------------- |
+| notebook-1 | Example Notebook 1   | `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` | topic1, topic2        |
+| notebook-2 | Example Notebook 2   | `yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy` | topic3, topic4        |
+
+> **Note:** Replace these with your actual notebook UUIDs from NotebookLM.
 
 ## IMPORTANT: Never Run Under WSL
 

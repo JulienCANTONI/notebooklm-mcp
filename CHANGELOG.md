@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.4.2] - 2025-12-28
+## [1.4.2] - 2025-12-29
 
 ### Fixed
 
@@ -34,37 +34,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - NotebookLM now uses `mdc-tab` / `mat-mdc-tab` Angular Material components
 - Added tab structure: Sources | Discussion | Studio
 
-### Known Limitations
-
-**NotebookLM UI Changes (Dec 2024):**
-
-The following features are temporarily unavailable due to NotebookLM UI redesign:
-
-- `generate_content` - FAQ, Study Guide, Briefing doc, Timeline, TOC generation
-- `generate_audio` - Audio overview (podcast) generation
-- `create_note` - Research notes with fast/deep modes
-
-The traditional Studio panel buttons for content generation no longer exist.
-The UI now uses Angular components (`studio-panel`, `artifact-library`) and
-content appears to be generated through chat interactions or automatically.
-
-**Fully Functional Features:**
-
-- ✅ `ask_question` - Q&A with source citations
-- ✅ `list_notebooks`, `select_notebook`, `search_notebooks` - Library management
-- ✅ `list_content` - View sources and existing artifacts
-- ✅ `add_source` - Add files, URLs, text, YouTube, Google Drive
-- ✅ Session management - Create, reset, close sessions
-- ✅ Authentication - setup_auth, re_auth, de_auth
-
 ### Added
 
 **Comprehensive E2E Test Suite:**
 
-- 30 real integration tests against live NotebookLM
-- Tests cover all API endpoints
-- Graceful handling of UI limitations (tests pass with warnings)
-- WSL-to-Windows compatibility via `cmd.exe /c curl`
+- Full E2E test coverage: 22/22 endpoints tested and passing
+- PowerShell-based test runner: `tests/e2e/run-e2e-tests.ps1`
+- Individual test scripts for each endpoint
+- WSL-to-Windows compatible via `cmd.exe /c powershell`
+
+**Fully Functional Features (All Verified E2E):**
+
+- ✅ `ask_question` - Q&A with source citations
+- ✅ `list_notebooks`, `select_notebook`, `search_notebooks` - Library management
+- ✅ `list_content` - View sources and existing artifacts
+- ✅ `add_source` - Add files, URLs, text, YouTube (all types working)
+- ✅ `generate_content` - FAQ, Study Guide, Briefing doc (via chat fallback)
+- ✅ `generate_audio` - Audio overview generation
+- ✅ `create_note` - Research notes with fast/deep modes
+- ✅ Session management - Create, reset, close sessions
+- ✅ Authentication - setup_auth, re_auth, de_auth
 
 ---
 

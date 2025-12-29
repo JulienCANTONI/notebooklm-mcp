@@ -147,14 +147,14 @@ describeE2E('Full E2E Tests - Real NotebookLM', () => {
       expect((result.data as { notebooks: unknown[] }).notebooks.length).toBeGreaterThan(0);
     });
 
-    it('should have CNV notebook configured', async () => {
+    it('should have test notebook configured', async () => {
       const result = await httpRequest('/notebooks');
       const notebooks = (result.data as { notebooks: Array<{ id: string; name: string }> })
         .notebooks;
 
-      const cnvNotebook = notebooks.find((n) => n.id === TEST_NOTEBOOK_ID);
-      expect(cnvNotebook).toBeDefined();
-      expect(cnvNotebook?.name).toContain('CNV');
+      const testNotebook = notebooks.find((n) => n.id === TEST_NOTEBOOK_ID);
+      expect(testNotebook).toBeDefined();
+      expect(testNotebook?.name).toBeTruthy();
     });
 
     it('should get notebook details', async () => {
@@ -185,26 +185,23 @@ describeE2E('Full E2E Tests - Real NotebookLM', () => {
     });
 
     it('should search notebooks by topic', async () => {
-      const result = await httpRequest('/notebooks/search?query=CNV');
+      // Search for a topic that should match the test notebook
+      const result = await httpRequest(`/notebooks/search?query=${testConfig.notebooks.primary.name}`);
 
       expect(result.success).toBe(true);
       const data = result.data as { notebooks: Array<{ id: string; name: string }> };
       expect(data.notebooks).toBeInstanceOf(Array);
-      // Should find the CNV notebook
-      if (data.notebooks.length > 0) {
-        expect(data.notebooks[0].name).toMatch(/CNV|Communication/i);
-      }
     });
   });
 
   describe('BrowserSession.ask() - Core Q&A', () => {
     it(
-      'should answer a simple question about CNV',
+      'should answer a simple question about the notebook topic',
       async () => {
         if (!isAuthenticated) return;
 
         const result = await httpRequest('/ask', 'POST', {
-          question: "Qu'est-ce que la CNV en une phrase?",
+          question: testConfig.content.sampleQuestion,
           notebook_id: TEST_NOTEBOOK_ID,
         });
 
@@ -213,27 +210,23 @@ describeE2E('Full E2E Tests - Real NotebookLM', () => {
         expect(data.status).toBe('success');
         expect(data.answer).toBeTruthy();
         expect(data.answer.length).toBeGreaterThan(50);
-        // Should mention CNV or Communication NonViolente
-        expect(data.answer.toLowerCase()).toMatch(/cnv|communication|nonviolente|rosenberg/);
       },
       TIMEOUTS.ask
     );
 
     it(
-      'should answer a specific question about OSBD',
+      'should answer a specific question',
       async () => {
         if (!isAuthenticated) return;
 
         const result = await httpRequest('/ask', 'POST', {
-          question: 'Quels sont les 4 composants du processus OSBD?',
+          question: 'What are the main concepts covered in this notebook?',
           notebook_id: TEST_NOTEBOOK_ID,
         });
 
         expect(result.success).toBe(true);
         const data = result.data as { answer: string };
         expect(data.answer).toBeTruthy();
-        // Should mention the 4 components
-        expect(data.answer.toLowerCase()).toMatch(/observation|sentiment|besoin|demande/);
       },
       TIMEOUTS.ask
     );
@@ -245,7 +238,7 @@ describeE2E('Full E2E Tests - Real NotebookLM', () => {
 
         // First question
         const result1 = await httpRequest('/ask', 'POST', {
-          question: 'Qui a créé la CNV?',
+          question: 'Who is the main author or creator mentioned in this notebook?',
           notebook_id: TEST_NOTEBOOK_ID,
         });
         expect(result1.success).toBe(true);
@@ -253,14 +246,13 @@ describeE2E('Full E2E Tests - Real NotebookLM', () => {
 
         // Follow-up using same session
         const result2 = await httpRequest('/ask', 'POST', {
-          question: 'Quand est-il né?',
+          question: 'Tell me more about them.',
           notebook_id: TEST_NOTEBOOK_ID,
           session_id: session_id,
         });
 
         expect(result2.success).toBe(true);
         const data = result2.data as { answer: string; session_id: string };
-        // Should understand "il" refers to Rosenberg
         expect(data.answer).toBeTruthy();
         expect(data.session_id).toBe(session_id);
       },
@@ -273,7 +265,7 @@ describeE2E('Full E2E Tests - Real NotebookLM', () => {
         if (!isAuthenticated) return;
 
         const result = await httpRequest('/ask', 'POST', {
-          question: "Donne-moi une définition de l'empathie selon la CNV",
+          question: 'Give me a key definition from this notebook with sources.',
           notebook_id: TEST_NOTEBOOK_ID,
         });
 
@@ -322,7 +314,7 @@ describeE2E('Full E2E Tests - Real NotebookLM', () => {
 
         expect(result.success).toBe(true);
         const data = result.data as { sources?: unknown[] };
-        // CNV notebook should have sources
+        // Test notebook should have sources
         expect(data.sources).toBeInstanceOf(Array);
       },
       TIMEOUTS.content

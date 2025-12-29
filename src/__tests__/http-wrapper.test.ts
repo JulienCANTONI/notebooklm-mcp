@@ -19,7 +19,7 @@ describe('HTTP Wrapper URL Validation', () => {
   it('should validate NotebookLM URL format', () => {
     const validUrls = [
       'https://notebooklm.google.com/notebook/abc-123',
-      'https://notebooklm.google.com/notebook/74912e55-34a4-4027-bdcc-8e89badd0efd',
+      'https://notebooklm.google.com/notebook/00000000-0000-0000-0000-000000000001',
     ];
 
     for (const url of validUrls) {

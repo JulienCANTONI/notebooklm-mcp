@@ -178,7 +178,7 @@ When using `source_format` other than `none`:
   "success": true,
   "data": {
     "status": "success",
-    "question": "What is the Self in IFS?",
+    "question": "What is the main topic?",
     "answer": "The Self is the core essence[1: \"The Self is the seat of consciousness...\"]...",
     "session_id": "abc123",
     "notebook_url": "https://notebooklm.google.com/notebook/xxx",
@@ -432,17 +432,14 @@ Automatically generate notebook metadata by querying NotebookLM itself.
   "notebook": {
     "id": "generated-uuid",
     "url": "https://notebooklm.google.com/notebook/abc123",
-    "name": "cnv-pratique-essentiels",
-    "description": "Manuel CNV couvrant 4 étapes fondamentales. Inclut exercices d'auto-empathie et écoute.",
+    "name": "auto-generated-notebook",
+    "description": "Comprehensive guide covering key concepts. Includes practical exercises and examples.",
     "tags": [
-      "cnv",
-      "empathie",
-      "communication",
-      "besoins",
-      "sentiments",
-      "demandes",
-      "conflits",
-      "authenticité"
+      "topic1",
+      "topic2",
+      "learning",
+      "examples",
+      "exercises"
     ],
     "auto_generated": true,
     "created_at": "2025-01-23T10:00:00Z"

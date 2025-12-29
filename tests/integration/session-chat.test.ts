@@ -33,9 +33,9 @@ const describeIntegration = INTEGRATION_ENABLED ? describe : describe.skip;
 // Check if production profile exists
 const hasProductionProfile = fs.existsSync(PROD_PROFILE_DIR);
 
-// Test notebooks
+// Test notebooks - Replace with your real notebook UUID in test-config.local.ts
 const TEST_NOTEBOOK_URL =
-  'https://notebooklm.google.com/notebook/74912e55-34a4-4027-bdcc-8e89badd0efd';
+  'https://notebooklm.google.com/notebook/00000000-0000-0000-0000-000000000001';
 
 describeIntegration('SessionManager Integration', () => {
   let authManager: AuthManager;

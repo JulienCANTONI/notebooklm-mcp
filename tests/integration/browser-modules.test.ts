@@ -39,9 +39,10 @@ const describeIntegration = INTEGRATION_ENABLED ? describe : describe.skip;
 const hasProductionProfile = fs.existsSync(PROD_PROFILE_DIR);
 
 // Test notebooks from library
+// NOTE: These are placeholder UUIDs. Replace with real notebook UUIDs in test-config.local.ts
 const TEST_NOTEBOOKS = [
-  'https://notebooklm.google.com/notebook/74912e55-34a4-4027-bdcc-8e89badd0efd',
-  'https://notebooklm.google.com/notebook/3e79b7be-9a72-4ac7-aaf7-ac3f450fa96f',
+  'https://notebooklm.google.com/notebook/00000000-0000-0000-0000-000000000001',
+  'https://notebooklm.google.com/notebook/00000000-0000-0000-0000-000000000002',
 ];
 
 describeIntegration('SharedContextManager Integration', () => {
