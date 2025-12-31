@@ -187,7 +187,10 @@ function parseProfileStrategy(
 /**
  * Parse UI locale from string (for env vars)
  */
-function parseLocale(value: string | undefined, defaultValue: Config['uiLocale']): Config['uiLocale'] {
+function parseLocale(
+  value: string | undefined,
+  defaultValue: Config['uiLocale']
+): Config['uiLocale'] {
   if (!value) return defaultValue;
   const lower = value.toLowerCase();
   if (lower === 'fr' || lower === 'en') {
