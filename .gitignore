@@ -1,3 +1,7 @@
+# Local config (never commit)
+.mcp.json
+.quality-check-status.json
+
 # Dependencies
 node_modules/
 
@@ -38,6 +42,9 @@ Thumbs.db
 npm-debug.log*
 screenshots/
 
+# Debug screenshots
+debug-*.png
+
 # Archives / local notes
 *.tar.gz
 mcp-add-command.txt
@@ -73,9 +80,11 @@ coverage/
 temp-*.ts
 temp-*.js
 
-# Ad-hoc test scripts in project root (use tests/ directory instead)
-/test-*.ps1
+# Ad-hoc scripts in project root (use tests/ or scripts/ directory instead)
+/*.ps1
+/*.bat
 /test-*.json
+/q_*.ps1
 # But allow test scripts in tests/e2e/
 !tests/e2e/test-*.ps1
 
