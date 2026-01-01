@@ -58,6 +58,8 @@ Generate multiple content types from your notebook sources:
 - **Multi-notebook management** with validation and smart selection
 - **Auto-discovery**: Automatically generate metadata via NotebookLM queries
 - **Search notebooks** by keyword in name, description, or topics
+- **Scrape notebooks**: List all notebooks from NotebookLM with IDs and names
+- **Bulk delete**: Delete multiple notebooks at once
 
 ### Integration Options
 
@@ -67,8 +69,6 @@ Generate multiple content types from your notebook sources:
 ---
 
 ## Quick Start
-
-> ⚠️ **npm registry temporarily unavailable** - Install from GitHub instead (see below)
 
 ### Option 1: MCP Mode (Claude Code, Cursor, Codex)
 
@@ -136,10 +136,10 @@ See [ROADMAP.md](./ROADMAP.md) for planned features and version history.
 
 **Latest releases:**
 
+- **v1.5.2** — Notebook scraping from NotebookLM + Bulk delete + Bug fixes
 - **v1.5.1** — Multilingual UI support (FR/EN) with i18n selector system + E2E tests (76 tests)
 - **v1.5.0** — Complete Studio content generation (video, infographic, presentation, data_table) + Notes management + Delete sources
 - **v1.4.0** — Content management (sources, audio, generation) + Multi-account
-- **v1.3.7** — Source citation extraction (5 formats)
 
 **Not yet implemented:**
 
