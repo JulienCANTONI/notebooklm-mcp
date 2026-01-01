@@ -6,6 +6,32 @@ This document tracks planned features, recent implementations, and future ideas 
 
 ---
 
+## Backlog
+
+### High Priority
+
+| Feature | Description |
+|---------|-------------|
+| **list-notebooks-from-nblm** | Scrape NotebookLM homepage to get real list of notebooks with IDs/names |
+| **/notebooks/:id/share** | API endpoint to share notebooks between accounts programmatically |
+
+### Medium Priority
+
+| Feature | Description |
+|---------|-------------|
+| **Cleanup test notebooks** | Delete unused notebooks in test accounts (100 limit reached) |
+| **Source Discovery** | Discover sources from Web/Drive (Fast/Deep modes) |
+| **Edit/Delete notes** | Complete notes CRUD operations |
+
+### Low Priority
+
+| Feature | Description |
+|---------|-------------|
+| **Audio style selection** | Debate, Critique, Brief summary, Deep dive |
+| **Export formats** | PDF/DOCX for reports, PDF/PPTX for presentations, CSV/XLSX for tables |
+
+---
+
 ## Upcoming
 
 ### v1.6.0 - Study & Learning Features
@@ -31,32 +57,6 @@ This document tracks planned features, recent implementations, and future ideas 
 - [ ] Card format customization
 - [ ] Spaced repetition support
 - [ ] Export as Anki/Quizlet
-
-### Future Enhancements
-
-**Audio Overviews (advanced options):**
-
-- [ ] Audio style selection: Debate, Critique, Brief summary, Deep dive
-- [ ] Tone customization (humor, formality)
-- [ ] Length/duration control
-
-**Source Discovery:**
-
-- [ ] Discover sources from Web (Fast mode)
-- [ ] Discover sources from Web (Deep mode)
-- [ ] Discover sources from Google Drive (Fast mode)
-- [ ] Discover sources from Google Drive (Deep mode)
-
-**Export Formats:**
-
-- [ ] Download reports as PDF/DOCX
-- [ ] Download presentations as PDF/PPTX
-- [ ] Download data tables as CSV/XLSX
-
-**Note Management:**
-
-- [ ] Edit notes
-- [ ] Delete notes
 
 ---
 
