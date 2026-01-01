@@ -34,16 +34,21 @@ node dist/http-wrapper.js
 
 ### Browser Configuration
 
-| Variable          | Default | Description                                             |
-| ----------------- | ------- | ------------------------------------------------------- |
-| `HEADLESS`        | `true`  | Chrome headless (`true` = invisible, `false` = visible) |
-| `STEALTH_ENABLED` | `true`  | Stealth anti-detection mode                             |
+| Variable               | Default | Description                                             |
+| ---------------------- | ------- | ------------------------------------------------------- |
+| `HEADLESS`             | `true`  | Chrome headless (`true` = invisible, `false` = visible) |
+| `STEALTH_ENABLED`      | `true`  | Stealth anti-detection mode                             |
+| `NOTEBOOKLM_UI_LOCALE` | `fr`    | UI language for selectors (`fr` or `en`)                |
 
 **Examples:**
 
 ```powershell
 # Debug: see Chrome
 $env:HEADLESS="false"
+node dist/http-wrapper.js
+
+# Use English UI selectors (for English Google Account)
+$env:NOTEBOOKLM_UI_LOCALE="en"
 node dist/http-wrapper.js
 ```
 
@@ -191,6 +196,7 @@ NODE_ENV=production
 # Browser Configuration
 HEADLESS=true
 STEALTH_ENABLED=true
+NOTEBOOKLM_UI_LOCALE=fr  # or 'en' for English
 
 # Session Configuration
 MAX_SESSIONS=10

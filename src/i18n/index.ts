@@ -26,6 +26,8 @@ export interface LocaleData {
   };
   buttons: {
     addSource: string;
+    addNote: string;
+    newNote: string;
     insert: string;
     add: string;
     upload: string;
@@ -36,15 +38,24 @@ export interface LocaleData {
     cancel: string;
     close: string;
     save: string;
+    done: string;
+    create: string;
     download: string;
     generate: string;
   };
   sourceTypes: {
     uploadFiles: string;
     website: string;
+    link: string;
+    url: string;
     pastedText: string;
     drive: string;
     youtube: string;
+  };
+  placeholders: {
+    pasteUrl: string;
+    enterUrl: string;
+    pasteLinks: string;
   };
   sourceNames: {
     pastedText: string;
@@ -74,8 +85,11 @@ export interface LocaleData {
   };
   actions: {
     openInSheets: string;
+    openInSlides: string;
     deepDive: string;
     audioOverview: string;
+    addToSources: string;
+    convertToSource: string;
   };
   status: {
     generating: string;

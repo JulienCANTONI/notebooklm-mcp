@@ -30,7 +30,14 @@ setLocale(CONFIG.uiLocale);
  */
 function i18nSelectors(
   template: string,
-  category: 'tabs' | 'buttons' | 'sourceTypes' | 'sourceNames' | 'contentTypes' | 'actions',
+  category:
+    | 'tabs'
+    | 'buttons'
+    | 'sourceTypes'
+    | 'sourceNames'
+    | 'contentTypes'
+    | 'actions'
+    | 'placeholders',
   key: string
 ): string[] {
   const texts = tAll(category, key);
@@ -145,9 +152,8 @@ export class ContentManager {
       // Icon button with "add" icon specifically
       'button:has(mat-icon:has-text("add"))',
       'button:has(mat-icon:has-text("add_circle"))',
-      // Text-based patterns
-      'button:has-text("Add source")',
-      'button:has-text("Ajouter une source")',
+      // Text-based patterns (bilingual via i18n)
+      ...i18nSelectors('button:has-text("{text}")', 'buttons', 'addSource'),
       // FAB buttons (floating action button for adding)
       'button.mat-fab',
       'button.mat-mini-fab',
@@ -358,11 +364,10 @@ export class ContentManager {
     log.info(`  📁 Uploading file: ${path.basename(resolvedPath)}`);
 
     try {
-      // Click on file upload option
+      // Click on file upload option (bilingual via i18n)
       const fileTypeSelectors = [
-        'button:has-text("Upload files")',
-        'button:has-text("Importer des fichiers")',
-        'button:has-text("Upload")',
+        ...i18nSelectors('button:has-text("{text}")', 'sourceTypes', 'uploadFiles'),
+        ...i18nSelectors('button:has-text("{text}")', 'buttons', 'upload'),
         '[data-type="file"]',
       ];
 
@@ -426,13 +431,11 @@ export class ContentManager {
     log.info(`  🌐 Adding URL: ${input.url}`);
 
     try {
-      // Click on URL/Website option
+      // Click on URL/Website option (bilingual selectors)
       const urlTypeSelectors = [
-        'button:has-text("Website")',
-        'button:has-text("Site web")',
-        'button:has-text("Link")',
-        'button:has-text("URL")',
-        'button:has-text("Web")',
+        ...i18nSelectors('button:has-text("{text}")', 'sourceTypes', 'website'),
+        ...i18nSelectors('button:has-text("{text}")', 'sourceTypes', 'link'),
+        ...i18nSelectors('button:has-text("{text}")', 'sourceTypes', 'url'),
         '[data-type="url"]',
         '[aria-label*="website"]',
         '[aria-label*="URL"]',
@@ -457,38 +460,47 @@ export class ContentManager {
 
       if (!foundUrlOption) {
         log.info(`  ℹ️ No URL option button found, looking for input directly`);
+        // DEBUG: List all visible buttons in the page
+        try {
+          const buttons = await this.page.locator('button').all();
+          log.info(`  🔍 DEBUG: Found ${buttons.length} buttons total`);
+          for (let i = 0; i < Math.min(buttons.length, 15); i++) {
+            const btn = buttons[i];
+            const visible = await btn.isVisible().catch(() => false);
+            if (visible) {
+              const text = await btn.textContent().catch(() => '');
+              const ariaLabel = await btn.getAttribute('aria-label').catch(() => '');
+              log.info(`  🔍 Button[${i}]: text="${text?.trim()}", aria="${ariaLabel}"`);
+            }
+          }
+        } catch (e) {
+          log.warning(`  ⚠️ Could not list buttons: ${e}`);
+        }
       }
 
       // Wait for input to appear after clicking option
       await randomDelay(500, 1000);
 
-      // Find URL input (can be input OR textarea)
+      // Find URL input (can be input OR textarea) - bilingual selectors
       log.info(`  🔍 Looking for URL input...`);
       const urlInputSelectors = [
-        // French placeholders - input AND textarea
-        'input[placeholder*="Collez"]',
-        'textarea[placeholder*="Collez"]',
-        'input[placeholder*="liens"]',
-        'textarea[placeholder*="liens"]',
-        // English placeholders
+        // i18n placeholder selectors
+        ...i18nSelectors('input[placeholder*="{text}"]', 'placeholders', 'pasteUrl'),
+        ...i18nSelectors('textarea[placeholder*="{text}"]', 'placeholders', 'pasteUrl'),
+        ...i18nSelectors('input[placeholder*="{text}"]', 'placeholders', 'enterUrl'),
+        ...i18nSelectors('textarea[placeholder*="{text}"]', 'placeholders', 'enterUrl'),
+        ...i18nSelectors('input[placeholder*="{text}"]', 'placeholders', 'pasteLinks'),
+        ...i18nSelectors('textarea[placeholder*="{text}"]', 'placeholders', 'pasteLinks'),
+        // URL/http generic selectors (work in both languages)
         'input[placeholder*="URL"]',
         'textarea[placeholder*="URL"]',
         'input[placeholder*="url"]',
         'textarea[placeholder*="url"]',
         'input[placeholder*="http"]',
         'textarea[placeholder*="http"]',
-        'input[placeholder*="Paste"]',
-        'textarea[placeholder*="Paste"]',
-        'input[placeholder*="Enter"]',
-        'textarea[placeholder*="Enter"]',
-        'input[placeholder*="Coller"]',
-        'textarea[placeholder*="Coller"]',
-        'input[placeholder*="link"]',
-        'textarea[placeholder*="link"]',
-        'input[placeholder*="Link"]',
-        'textarea[placeholder*="Link"]',
         'input[name="url"]',
         'input[type="url"]',
+        // Fallback dialog selectors
         '[role="dialog"] input[type="text"]',
         '[role="dialog"] input:not([type="hidden"])',
         '[role="dialog"] textarea',
@@ -765,9 +777,9 @@ export class ContentManager {
         log.warning(`  ⚠️ Could not take debug screenshot: ${e}`);
       }
 
-      // DEBUG: Check if the "Insérer" button is enabled
+      // DEBUG: Check if the "Insert" button is enabled (bilingual via i18n)
       try {
-        const insertBtnSelectors = ['button:has-text("Insérer")', 'button:has-text("Insert")'];
+        const insertBtnSelectors = i18nSelectors('button:has-text("{text}")', 'buttons', 'insert');
         for (const sel of insertBtnSelectors) {
           const btn = this.page.locator(sel).first();
           if (await btn.isVisible({ timeout: 500 })) {
@@ -964,16 +976,14 @@ export class ContentManager {
    */
   private async clickUploadButton(): Promise<void> {
     const uploadBtnSelectors = [
-      // Primary action buttons (most likely)
-      'button.mdc-button--raised:has-text("Insert")',
-      'button.mat-flat-button:has-text("Insert")',
-      'button[color="primary"]:has-text("Insert")',
-      // Generic text patterns
-      'button:has-text("Insert")',
-      'button:has-text("Insérer")',
-      'button:has-text("Add")',
-      'button:has-text("Ajouter")',
-      'button:has-text("Upload")',
+      // Primary action buttons (most likely) - bilingual via i18n
+      ...i18nSelectors('button.mdc-button--raised:has-text("{text}")', 'buttons', 'insert'),
+      ...i18nSelectors('button.mat-flat-button:has-text("{text}")', 'buttons', 'insert'),
+      ...i18nSelectors('button[color="primary"]:has-text("{text}")', 'buttons', 'insert'),
+      // Generic text patterns (bilingual via i18n)
+      ...i18nSelectors('button:has-text("{text}")', 'buttons', 'insert'),
+      ...i18nSelectors('button:has-text("{text}")', 'buttons', 'add'),
+      ...i18nSelectors('button:has-text("{text}")', 'buttons', 'upload'),
       'button:has-text("Import")',
       'button:has-text("Save")',
       'button:has-text("Submit")',
@@ -1138,25 +1148,25 @@ export class ContentManager {
 
         // METHOD 1: Look for pasted text source in the SOURCES PANEL specifically (not anywhere on page)
         // Use more specific selectors to avoid matching dialog content
-        // Support both French ("Texte collé") and English ("Pasted text") UI
+        // Support both French ("Texte collé") and English ("Pasted text") UI via i18n
         const pastedTextSelectors = [
-          // Sources panel specific selectors - French
-          'mat-checkbox:has-text("Texte collé")',
-          '[class*="source"]:has-text("Texte collé")',
-          ':has-text("Texte collé"):not([role="dialog"])',
-          // Sources panel specific selectors - English
-          'mat-checkbox:has-text("Pasted text")',
-          '[class*="source"]:has-text("Pasted text")',
-          ':has-text("Pasted text"):not([role="dialog"])',
+          // Sources panel specific selectors (bilingual via i18n)
+          ...i18nSelectors('mat-checkbox:has-text("{text}")', 'sourceNames', 'pastedText'),
+          ...i18nSelectors('[class*="source"]:has-text("{text}")', 'sourceNames', 'pastedText'),
+          ...i18nSelectors(':has-text("{text}"):not([role="dialog"])', 'sourceNames', 'pastedText'),
         ];
+
+        // Get localized pasted text names for detection
+        const pastedTextNames = tAll('sourceNames', 'pastedText');
 
         for (const selector of pastedTextSelectors) {
           try {
             const el = this.page.locator(selector).first();
             if (await el.isVisible({ timeout: 1000 })) {
               log.success(`  ✅ Found pasted text source: ${selector}`);
-              // Detect source name from selector (FR: "Texte collé", EN: "Pasted text")
-              const detectedName = selector.includes('Pasted text') ? 'Pasted text' : 'Texte collé';
+              // Detect source name from selector - find which locale's text is in the selector
+              const detectedName =
+                pastedTextNames.find((name) => selector.includes(name)) || pastedTextNames[0];
               return { success: true, sourceName: detectedName, status: 'ready' };
             }
           } catch {
@@ -1204,7 +1214,9 @@ export class ContentManager {
             const el = this.page.locator(selector).first();
             if (await el.isVisible({ timeout: 1000 })) {
               log.success(`  ✅ Found pasted text source after wait: ${selector}`);
-              const detectedName = selector.includes('Pasted text') ? 'Pasted text' : 'Texte collé';
+              // Detect source name from selector - find which locale's text is in the selector
+              const detectedName =
+                pastedTextNames.find((name) => selector.includes(name)) || pastedTextNames[0];
               return { success: true, sourceName: detectedName, status: 'ready' };
             }
           } catch {
@@ -2477,13 +2489,10 @@ export class ContentManager {
    */
   private async confirmDeletion(): Promise<void> {
     const confirmSelectors = [
-      // Confirmation buttons
-      'button:has-text("Confirm")',
-      'button:has-text("Confirmer")',
-      'button:has-text("Yes")',
-      'button:has-text("Oui")',
-      'button:has-text("Delete")',
-      'button:has-text("Supprimer")',
+      // Confirmation buttons (bilingual via i18n)
+      ...i18nSelectors('button:has-text("{text}")', 'buttons', 'confirm'),
+      ...i18nSelectors('button:has-text("{text}")', 'buttons', 'yes'),
+      ...i18nSelectors('button:has-text("{text}")', 'buttons', 'delete'),
       'button:has-text("OK")',
       // Dialog confirm buttons
       '[role="dialog"] button.mat-primary',
@@ -2779,8 +2788,8 @@ export class ContentManager {
       'button[aria-label*="Download"]',
       'button[aria-label*="Télécharger"]',
       'button[aria-label*="download"]',
-      'button:has-text("Download")',
-      'button:has-text("Télécharger")',
+      // Text-based patterns (bilingual via i18n)
+      ...i18nSelectors('button:has-text("{text}")', 'buttons', 'download'),
       'a[download]',
       '.download-button',
       '[data-action="download"]',
@@ -2899,13 +2908,11 @@ export class ContentManager {
         }
       }
 
-      // Find download button (either direct or in menu)
+      // Find download button (either direct or in menu) - bilingual via i18n
       const downloadSelectors = [
         // Menu item patterns (if menu was opened)
-        '[role="menuitem"]:has-text("Download")',
-        '[role="menuitem"]:has-text("Télécharger")',
-        'mat-menu-item:has-text("Download")',
-        'mat-menu-item:has-text("Télécharger")',
+        ...i18nSelectors('[role="menuitem"]:has-text("{text}")', 'buttons', 'download'),
+        ...i18nSelectors('mat-menu-item:has-text("{text}")', 'buttons', 'download'),
         '.mat-mdc-menu-item:has-text("Download")',
         // Material Design icon buttons
         'button:has(mat-icon:has-text("download"))',
@@ -2915,9 +2922,8 @@ export class ContentManager {
         'button[aria-label*="Download"]',
         'button[aria-label*="Télécharger"]',
         'button[aria-label*="download"]',
-        // Text patterns
-        'button:has-text("Download")',
-        'button:has-text("Télécharger")',
+        // Text patterns (bilingual via i18n)
+        ...i18nSelectors('button:has-text("{text}")', 'buttons', 'download'),
         // Icon buttons near audio
         '.audio-controls button:has(mat-icon)',
         '.audio-player button:has(mat-icon)',
@@ -3204,13 +3210,11 @@ export class ContentManager {
       await this.navigateToStudio();
       await randomDelay(500, 1000);
 
-      // Step 2: Look for "Add note" or "+" button in the Studio panel
+      // Step 2: Look for "Add note" or "+" button in the Studio panel (bilingual via i18n)
       const addNoteSelectors = [
-        // Primary selectors for Add Note button
-        'button:has-text("Add note")',
-        'button:has-text("Ajouter une note")',
-        'button:has-text("New note")',
-        'button:has-text("Nouvelle note")',
+        // Primary selectors for Add Note button (bilingual via i18n)
+        ...i18nSelectors('button:has-text("{text}")', 'buttons', 'addNote'),
+        ...i18nSelectors('button:has-text("{text}")', 'buttons', 'newNote'),
         // Icon button patterns
         'button[aria-label*="Add note"]',
         'button[aria-label*="add note" i]',
@@ -3367,17 +3371,13 @@ export class ContentManager {
         };
       }
 
-      // Step 6: Save the note by clicking Save/Done button
+      // Step 6: Save the note by clicking Save/Done button (bilingual via i18n)
       const saveSelectors = [
-        // Primary save buttons
-        'button:has-text("Save")',
-        'button:has-text("Enregistrer")',
-        'button:has-text("Done")',
-        'button:has-text("Terminé")',
-        'button:has-text("Create")',
-        'button:has-text("Créer")',
-        'button:has-text("Add")',
-        'button:has-text("Ajouter")',
+        // Primary save buttons (bilingual via i18n)
+        ...i18nSelectors('button:has-text("{text}")', 'buttons', 'save'),
+        ...i18nSelectors('button:has-text("{text}")', 'buttons', 'done'),
+        ...i18nSelectors('button:has-text("{text}")', 'buttons', 'create'),
+        ...i18nSelectors('button:has-text("{text}")', 'buttons', 'add'),
         // Icon buttons
         'button:has(mat-icon:has-text("check"))',
         'button:has(mat-icon:has-text("save"))',

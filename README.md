@@ -126,6 +126,7 @@ curl -X POST http://localhost:3000/ask \
 | [Auto-Discovery](./deployment/docs/07-AUTO-DISCOVERY.md)     | Autonomous metadata generation            |
 | [Multi-Interface](./deployment/docs/09-MULTI-INTERFACE.md)   | Run Claude Desktop + HTTP simultaneously  |
 | [Chrome Limitation](./docs/CHROME_PROFILE_LIMITATION.md)     | Profile locking (solved in v1.3.6+)       |
+| [Adding a Language](./docs/ADDING_A_LANGUAGE.md)             | i18n system for multilingual UI support   |
 
 ---
 
@@ -135,6 +136,7 @@ See [ROADMAP.md](./ROADMAP.md) for planned features and version history.
 
 **Latest releases:**
 
+- **v1.5.1** — Multilingual UI support (FR/EN) with i18n selector system + E2E tests (76 tests)
 - **v1.5.0** — Complete Studio content generation (video, infographic, presentation, data_table) + Notes management + Delete sources
 - **v1.4.0** — Content management (sources, audio, generation) + Multi-account
 - **v1.3.7** — Source citation extraction (5 formats)

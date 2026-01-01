@@ -7,6 +7,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.5.1] - 2026-01-01
+
+### Added
+
+**Multilingual UI Support (i18n):**
+
+- New internationalization system for NotebookLM UI selectors
+- Support for French (fr) and English (en) UI languages
+- `NOTEBOOKLM_UI_LOCALE` environment variable to set UI language
+- Locale files in `src/i18n/` with translated selectors for all UI elements
+- `SelectorBuilder` class for generating bilingual selectors
+- `tAll()` function to get translations in all supported languages
+- Documentation: `docs/ADDING_A_LANGUAGE.md` for adding new languages
+
+**Language/Account Switching:**
+
+- New `scripts/switch-account-language.sh` script for automated language switching
+- Automated Chrome profile cache deletion and re-authentication
+- Syncs new profile to main profile after language change
+- Visual verification with `--show` flag
+
+**E2E Test Infrastructure:**
+
+- Complete E2E test suite with 76 tests (75 pass, 1 skip)
+- Test categories: Health, Notebooks, Ask, Sessions, Sources, Content, Notes, CRUD, Errors
+- Support for QUICK mode (55 tests) and FULL mode (76 tests)
+- Multi-account test configuration with per-account notebook URLs
+- Test tracking in `tests/e2e/TRACKING.md`
+
+### Changed
+
+- Updated all test files to use `currentNotebooks` from config for proper account isolation
+- Jest configuration updated for ESM support with `--testPathPatterns`
+
+---
+
 ## [1.4.2] - 2025-12-29
 
 ### Removed

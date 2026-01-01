@@ -12,6 +12,8 @@
 
   "buttons": {
     "addSource": "Add source",
+    "addNote": "Add note",
+    "newNote": "New note",
     "insert": "Insert",
     "add": "Add",
     "upload": "Upload",
@@ -22,6 +24,8 @@
     "cancel": "Cancel",
     "close": "Close",
     "save": "Save",
+    "done": "Done",
+    "create": "Create",
     "download": "Download",
     "generate": "Generate"
   },
@@ -29,9 +33,17 @@
   "sourceTypes": {
     "uploadFiles": "Upload files",
     "website": "Website",
+    "link": "Link",
+    "url": "URL",
     "pastedText": "Copied text",
     "drive": "Drive",
     "youtube": "YouTube"
+  },
+
+  "placeholders": {
+    "pasteUrl": "Paste",
+    "enterUrl": "Enter",
+    "pasteLinks": "link"
   },
 
   "sourceNames": {
@@ -88,8 +100,11 @@
 
   "actions": {
     "openInSheets": "Open in Sheets",
+    "openInSlides": "Open in Slides",
     "deepDive": "Deep Dive",
-    "audioOverview": "Audio Overview"
+    "audioOverview": "Audio Overview",
+    "addToSources": "Add to sources",
+    "convertToSource": "Convert to source"
   },
 
   "status": {

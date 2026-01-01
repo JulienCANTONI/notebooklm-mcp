@@ -4,6 +4,7 @@ export default {
   testEnvironment: 'node',
   roots: ['<rootDir>/src', '<rootDir>/tests'],
   testMatch: ['**/__tests__/**/*.test.ts', '**/*.test.ts', '**/*.spec.ts'],
+  testPathIgnorePatterns: ['/node_modules/', '/tests/e2e/'],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
 
   // ES Module support

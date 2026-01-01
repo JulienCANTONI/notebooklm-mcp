@@ -250,6 +250,41 @@ If rotation fails, the response includes:
 }
 ```
 
+## Language Switching
+
+Each account may have a different Google Account language setting. The server uses UI selectors that must match the NotebookLM language.
+
+### Automated Language Switch
+
+Use the provided script to switch an account's language:
+
+```bash
+./scripts/switch-account-language.sh --account=mathieu --lang=fr --show
+```
+
+**What it does:**
+
+1. Stops the server and Chrome
+2. Deletes the Chrome profile cache for the account
+3. Re-authenticates (opens browser for login)
+4. Syncs the new profile to main
+5. Restarts server with the correct `NOTEBOOKLM_UI_LOCALE`
+
+**Important:** The Google Account's language setting must match. Change it at:
+https://myaccount.google.com/language
+
+### Environment Variable
+
+Set the UI locale when starting the server:
+
+```bash
+NOTEBOOKLM_UI_LOCALE=en node dist/http-wrapper.js
+```
+
+See [Adding a Language](../../docs/ADDING_A_LANGUAGE.md) for details on the i18n system.
+
+---
+
 ## Best Practices
 
 1. **Use 3+ accounts** for production workloads
@@ -257,3 +292,4 @@ If rotation fails, the response includes:
 3. **Monitor quotas** via logs or quota.json files
 4. **Stagger usage** across accounts to avoid hitting limits simultaneously
 5. **Test rotation** before deploying to production
+6. **Match UI locale** with each account's Google language setting
