@@ -65,6 +65,7 @@ Generate multiple content types from your notebook sources:
 
 - **MCP Protocol** — Claude Code, Cursor, Codex, any MCP client
 - **HTTP REST API** — n8n, Zapier, Make.com, custom integrations
+- **Docker** — Isolated deployment with Docker or Docker Compose
 
 ---
 
@@ -124,6 +125,7 @@ curl -X POST http://localhost:3000/ask \
 | [Troubleshooting](./deployment/docs/05-TROUBLESHOOTING.md)   | Common issues and solutions               |
 | [Notebook Library](./deployment/docs/06-NOTEBOOK-LIBRARY.md) | Multi-notebook management                 |
 | [Auto-Discovery](./deployment/docs/07-AUTO-DISCOVERY.md)     | Autonomous metadata generation            |
+| [Docker](./deployment/docs/08-DOCKER.md)                     | Docker and Docker Compose deployment      |
 | [Multi-Interface](./deployment/docs/09-MULTI-INTERFACE.md)   | Run Claude Desktop + HTTP simultaneously  |
 | [Chrome Limitation](./docs/CHROME_PROFILE_LIMITATION.md)     | Profile locking (solved in v1.3.6+)       |
 | [Adding a Language](./docs/ADDING_A_LANGUAGE.md)             | i18n system for multilingual UI support   |

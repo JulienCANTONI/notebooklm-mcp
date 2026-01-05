@@ -12,6 +12,7 @@ import { SessionManager } from './session/session-manager.js';
 import { NotebookLibrary } from './library/notebook-library.js';
 import { ToolHandlers } from './tools/index.js';
 import { AutoDiscovery } from './auto-discovery/auto-discovery.js';
+import { StartupManager } from './startup/startup-manager.js';
 import { log } from './utils/logger.js';
 
 // Extend Express Request to include requestId
@@ -911,13 +912,21 @@ app.use((err: Error, req: Request, res: Response, _next: NextFunction) => {
   });
 });
 
-// Start server
+// Start server with startup sequence
 const PORT = Number(process.env.HTTP_PORT) || 3000;
 const HOST = process.env.HTTP_HOST || '0.0.0.0';
+const VERSION = '1.5.2';
 
-app.listen(PORT, HOST, () => {
-  log.success(`🌐 NotebookLM MCP HTTP Server v1.4.2`);
+const startupManager = new StartupManager(authManager);
+
+app.listen(PORT, HOST, async () => {
+  log.success(`🌐 NotebookLM MCP HTTP Server v${VERSION}`);
   log.success(`   Listening on ${HOST}:${PORT}`);
+
+  // Run startup sequence (account connection, auth verification)
+  const startupResult = await startupManager.startup();
+
+  // Show quick links and endpoints after startup
   log.info('');
   log.info('📊 Quick Links:');
   log.info(`   Health check: http://localhost:${PORT}/health`);
@@ -967,6 +976,16 @@ app.listen(PORT, HOST, () => {
     `   Host: ${HOST} ${HOST === '0.0.0.0' ? '(accessible from network)' : '(localhost only)'}`
   );
   log.info(`   Port: ${PORT}`);
+
+  // Show startup result summary
+  log.info('');
+  if (startupResult.authenticated) {
+    log.success(
+      `🔐 Status: Authenticated${startupResult.accountEmail ? ` as ${startupResult.accountEmail}` : ''}`
+    );
+  } else {
+    log.warning(`🔐 Status: Not authenticated - ${startupResult.message}`);
+  }
   log.info('');
   log.dim('📖 Documentation: ./deployment/docs/');
   log.dim('⏹️  Press Ctrl+C to stop');
