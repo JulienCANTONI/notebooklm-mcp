@@ -16,11 +16,12 @@ This document tracks planned features, recent implementations, and future ideas 
 
 ### Medium Priority
 
-| Feature                    | Description                                                  |
-| -------------------------- | ------------------------------------------------------------ |
-| **Cleanup test notebooks** | Delete unused notebooks in test accounts (100 limit reached) |
-| **Source Discovery**       | Discover sources from Web/Drive (Fast/Deep modes)            |
-| **Edit/Delete notes**      | Complete notes CRUD operations                               |
+| Feature                      | Description                                                              |
+| ---------------------------- | ------------------------------------------------------------------------ |
+| **Import scraped notebooks** | POST /notebooks/import-from-scrape - bulk register notebooks from scrape |
+| **Cleanup test notebooks**   | Delete unused notebooks in test accounts (100 limit reached)             |
+| **Source Discovery**         | Discover sources from Web/Drive (Fast/Deep modes)                        |
+| **Edit/Delete notes**        | Complete notes CRUD operations                                           |
 
 ### Low Priority
 
