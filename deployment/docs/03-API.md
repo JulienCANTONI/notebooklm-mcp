@@ -14,7 +14,7 @@ Or for network access: `http://<SERVER-IP>:3000`
 
 ---
 
-## Available Endpoints (31 total)
+## Available Endpoints (33 total)
 
 ### Authentication
 
@@ -34,18 +34,20 @@ Or for network access: `http://<SERVER-IP>:3000`
 
 ### Notebooks
 
-| Method   | Endpoint                   | Description                          |
-| -------- | -------------------------- | ------------------------------------ |
-| `GET`    | `/notebooks`               | List all notebooks                   |
-| `POST`   | `/notebooks`               | Add a notebook manually              |
-| `POST`   | `/notebooks/create`        | Create a new notebook in NotebookLM  |
-| `POST`   | `/notebooks/auto-discover` | Auto-generate notebook metadata      |
-| `GET`    | `/notebooks/search`        | Search notebooks by query            |
-| `GET`    | `/notebooks/stats`         | Get library statistics               |
-| `GET`    | `/notebooks/:id`           | Get notebook details                 |
-| `PUT`    | `/notebooks/:id`           | Update notebook metadata             |
-| `DELETE` | `/notebooks/:id`           | Delete a notebook                    |
-| `PUT`    | `/notebooks/:id/activate`  | Activate a notebook (set as default) |
+| Method   | Endpoint                        | Description                          |
+| -------- | ------------------------------- | ------------------------------------ |
+| `GET`    | `/notebooks`                    | List all notebooks                   |
+| `POST`   | `/notebooks`                    | Add a notebook manually              |
+| `POST`   | `/notebooks/create`             | Create a new notebook in NotebookLM  |
+| `POST`   | `/notebooks/auto-discover`      | Auto-generate notebook metadata      |
+| `GET`    | `/notebooks/scrape`             | Scrape notebooks from NotebookLM     |
+| `POST`   | `/notebooks/import-from-scrape` | Bulk import scraped notebooks        |
+| `GET`    | `/notebooks/search`             | Search notebooks by query            |
+| `GET`    | `/notebooks/stats`              | Get library statistics               |
+| `GET`    | `/notebooks/:id`                | Get notebook details                 |
+| `PUT`    | `/notebooks/:id`                | Update notebook metadata             |
+| `DELETE` | `/notebooks/:id`                | Delete a notebook                    |
+| `PUT`    | `/notebooks/:id/activate`       | Activate a notebook (set as default) |
 
 ### Sessions
 
@@ -1637,6 +1639,90 @@ curl -X POST "http://localhost:3000/content/notes/My%20Research%20Note/to-source
 - Promote important notes to be citable sources
 - Include your own research as part of the notebook's knowledge base
 - Make aggregated insights available for citation in future responses
+
+---
+
+## 23. Scrape Notebooks from NotebookLM
+
+### `GET /notebooks/scrape`
+
+Scrape all notebooks from the user's NotebookLM account.
+
+**Request:**
+
+```bash
+curl "http://localhost:3000/notebooks/scrape?show_browser=true"
+```
+
+**Query Parameters:**
+
+| Parameter      | Type    | Description                   |
+| -------------- | ------- | ----------------------------- |
+| `show_browser` | boolean | Show browser window for debug |
+
+**Success Response (200):**
+
+```json
+{
+  "success": true,
+  "data": {
+    "notebooks": [
+      {
+        "id": "89e31c61-63f9-480d-b0ad-92ed60bd1834",
+        "name": "Internal Family Systems",
+        "url": "https://notebooklm.google.com/notebook/89e31c61-63f9-480d-b0ad-92ed60bd1834"
+      }
+    ],
+    "total": 16,
+    "message": "Found 16 notebooks in NotebookLM account"
+  }
+}
+```
+
+---
+
+## 24. Bulk Import Scraped Notebooks
+
+### `POST /notebooks/import-from-scrape`
+
+Scrape notebooks from NotebookLM and bulk import them into the library.
+
+**Request:**
+
+```bash
+curl -X POST http://localhost:3000/notebooks/import-from-scrape \
+  -H "Content-Type: application/json" \
+  -d '{"auto_discover": false}'
+```
+
+**Body Parameters:**
+
+| Parameter       | Type     | Required | Description                            |
+| --------------- | -------- | -------- | -------------------------------------- |
+| `notebook_ids`  | string[] | No       | Filter: only import these notebook IDs |
+| `auto_discover` | boolean  | No       | Use AI to generate metadata (slower)   |
+| `show_browser`  | boolean  | No       | Show browser window for debug          |
+
+**Success Response (200):**
+
+```json
+{
+  "success": true,
+  "data": {
+    "imported": [{ "id": "89e31c61-...", "name": "Internal Family Systems", "status": "imported" }],
+    "errors": [],
+    "total_scraped": 16,
+    "total_imported": 16,
+    "total_errors": 0
+  }
+}
+```
+
+**Use Cases:**
+
+- Initial library setup: import all existing notebooks at once
+- Sync new notebooks: re-run to import newly created notebooks
+- Selective import: use `notebook_ids` to import specific notebooks only
 
 ---
 

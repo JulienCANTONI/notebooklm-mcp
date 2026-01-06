@@ -284,6 +284,107 @@ app.get('/notebooks/scrape', async (req: Request, res: Response) => {
   }
 });
 
+// Import scraped notebooks into library (MUST be before /notebooks/:id)
+app.post('/notebooks/import-from-scrape', async (req: Request, res: Response) => {
+  try {
+    const { notebook_ids, auto_discover, show_browser } = req.body;
+
+    // Step 1: Scrape notebooks from NotebookLM
+    log.info('📥 [IMPORT] Starting import from scrape...');
+    const scrapeResult = await toolHandlers.handleListNotebooksFromNblm(
+      { show_browser: show_browser === true },
+      async (message, progress, total) => {
+        log.info(`Progress: ${message} (${progress}/${total})`);
+      }
+    );
+
+    if (!scrapeResult.success || !scrapeResult.data) {
+      res.status(500).json({
+        success: false,
+        error: `Scrape failed: ${scrapeResult.error || 'Unknown error'}`,
+      });
+      return;
+    }
+
+    const scrapedNotebooks = scrapeResult.data.notebooks;
+    log.info(`  📋 Found ${scrapedNotebooks.length} notebooks from scrape`);
+
+    // Step 2: Filter notebooks if notebook_ids provided
+    let notebooksToImport = scrapedNotebooks;
+    if (notebook_ids && Array.isArray(notebook_ids) && notebook_ids.length > 0) {
+      notebooksToImport = scrapedNotebooks.filter((nb) => notebook_ids.includes(nb.id));
+      log.info(`  🔍 Filtered to ${notebooksToImport.length} notebooks`);
+    }
+
+    // Step 3: Import each notebook
+    const imported: Array<{ id: string; name: string; status: string }> = [];
+    const errors: Array<{ id: string; name: string; error: string }> = [];
+
+    for (const notebook of notebooksToImport) {
+      try {
+        if (auto_discover === true) {
+          // Use auto-discovery to generate metadata
+          log.info(`  🤖 Auto-discovering: ${notebook.name}`);
+          const discoverResult = await toolHandlers.handleAutoDiscoverNotebook({
+            url: notebook.url,
+          });
+          if (discoverResult.success) {
+            imported.push({ id: notebook.id, name: notebook.name, status: 'auto-discovered' });
+          } else {
+            errors.push({
+              id: notebook.id,
+              name: notebook.name,
+              error: discoverResult.error || 'Auto-discovery failed',
+            });
+          }
+        } else {
+          // Add with minimal metadata
+          log.info(`  📝 Adding: ${notebook.name}`);
+          const addResult = await toolHandlers.handleAddNotebook({
+            url: notebook.url,
+            name: notebook.name,
+            description: `Imported from NotebookLM scrape`,
+            topics: [notebook.name.toLowerCase().replace(/\s+/g, '-')],
+          });
+          if (addResult.success) {
+            imported.push({ id: notebook.id, name: notebook.name, status: 'imported' });
+          } else {
+            errors.push({
+              id: notebook.id,
+              name: notebook.name,
+              error: addResult.error || 'Add failed',
+            });
+          }
+        }
+      } catch (error) {
+        errors.push({
+          id: notebook.id,
+          name: notebook.name,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+    }
+
+    log.success(`✅ [IMPORT] Completed: ${imported.length} imported, ${errors.length} errors`);
+
+    res.json({
+      success: true,
+      data: {
+        imported,
+        errors,
+        total_scraped: scrapedNotebooks.length,
+        total_imported: imported.length,
+        total_errors: errors.length,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
+});
+
 // Bulk delete notebooks from NotebookLM (MUST be before /notebooks/:id)
 app.delete('/notebooks/bulk-delete', async (req: Request, res: Response) => {
   try {
@@ -931,7 +1032,7 @@ app.use((err: Error, req: Request, res: Response, _next: NextFunction) => {
 // Start server with startup sequence
 const PORT = Number(process.env.HTTP_PORT) || 3000;
 const HOST = process.env.HTTP_HOST || '0.0.0.0';
-const VERSION = '1.5.2';
+const VERSION = '1.5.3';
 
 const startupManager = new StartupManager(authManager);
 

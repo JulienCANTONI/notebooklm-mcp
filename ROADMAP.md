@@ -16,12 +16,11 @@ This document tracks planned features, recent implementations, and future ideas 
 
 ### Medium Priority
 
-| Feature                      | Description                                                              |
-| ---------------------------- | ------------------------------------------------------------------------ |
-| **Import scraped notebooks** | POST /notebooks/import-from-scrape - bulk register notebooks from scrape |
-| **Cleanup test notebooks**   | Delete unused notebooks in test accounts (100 limit reached)             |
-| **Source Discovery**         | Discover sources from Web/Drive (Fast/Deep modes)                        |
-| **Edit/Delete notes**        | Complete notes CRUD operations                                           |
+| Feature                    | Description                                                  |
+| -------------------------- | ------------------------------------------------------------ |
+| **Cleanup test notebooks** | Delete unused notebooks in test accounts (100 limit reached) |
+| **Source Discovery**       | Discover sources from Web/Drive (Fast/Deep modes)            |
+| **Edit/Delete notes**      | Complete notes CRUD operations                               |
 
 ### Low Priority
 
@@ -61,6 +60,13 @@ This document tracks planned features, recent implementations, and future ideas 
 ---
 
 ## Recently Implemented
+
+### v1.5.3 - Docker & Bulk Import
+
+- [x] Docker deployment with noVNC for visual Google authentication
+- [x] `POST /notebooks/import-from-scrape` - Bulk import notebooks from scrape
+- [x] Options: `notebook_ids` filter, `auto_discover` for AI metadata generation
+- [x] Chrome flags for Docker compatibility (`--no-sandbox`, etc.)
 
 ### v1.5.2 - Notebook Discovery
 
