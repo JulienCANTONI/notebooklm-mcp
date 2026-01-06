@@ -21,7 +21,7 @@ describe('Config Module', () => {
   describe('CONFIG defaults', () => {
     it('should have correct default values', () => {
       expect(CONFIG.headless).toBe(true);
-      expect(CONFIG.browserTimeout).toBe(30000);
+      expect(CONFIG.browserTimeout).toBe(600000); // 10 minutes
       expect(CONFIG.maxSessions).toBe(10);
       expect(CONFIG.sessionTimeout).toBe(900);
       expect(CONFIG.autoLoginEnabled).toBe(false);

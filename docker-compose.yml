@@ -18,11 +18,13 @@ services:
     # Port mapping
     ports:
       - '${HTTP_PORT:-3000}:3000'
+      - '5900:5900' # VNC for visual auth
 
     # Persistent data storage
     volumes:
       # Main data directory (cookies, library, accounts, browser state)
-      - notebooklm-data:/data
+      # Using local directory with existing auth data
+      - ./deploy-package/data:/data
       # Optional: mount local library.json for development
       # - ./library.json:/data/library.json:ro
 
@@ -38,7 +40,7 @@ services:
       - STEALTH_ENABLED=true
 
       # Data directory (inside container)
-      - NOTEBOOKLM_DATA_DIR=/data
+      - DATA_DIR=/data
 
       # Optional: NotebookLM URL (if you have a default notebook)
       # - NOTEBOOKLM_URL=https://notebooklm.google.com/notebook/YOUR_NOTEBOOK_ID

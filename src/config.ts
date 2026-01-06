@@ -93,7 +93,7 @@ const DEFAULTS: Config = {
 
   // Browser Settings
   headless: true,
-  browserTimeout: 30000,
+  browserTimeout: 600000, // 10 minutes (NotebookLM can be slow)
   viewport: { width: 1024, height: 768 },
 
   // Session Management
