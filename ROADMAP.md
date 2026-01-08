@@ -2,7 +2,7 @@
 
 This document tracks planned features, recent implementations, and future ideas for the NotebookLM MCP Server.
 
-## Current Version: v1.5.3
+## Current Version: v1.5.4
 
 ---
 
@@ -63,6 +63,15 @@ This document tracks planned features, recent implementations, and future ideas 
 ---
 
 ## Recently Implemented
+
+### v1.5.4 - Citation Source Format Fix
+
+- [x] Fixed `source_format` parameter not passed from HTTP `/ask` endpoint (critical bug)
+- [x] Updated citation selectors for current NotebookLM DOM (January 2026)
+- [x] New `extractSourceFromElement()` extracts both `sourceName` and `sourceText`
+- [x] Fixed Docker Xvfb permissions (`/tmp/.X11-unix`)
+- [x] Changed docker-compose port from 5900 to 6080 (noVNC web interface)
+- [x] Added E2E tests for source format functionality
 
 ### v1.5.3 - Docker & Bulk Import
 

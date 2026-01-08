@@ -48,7 +48,10 @@ RUN apt-get update && apt-get install -y \
 # Create non-root user for security
 RUN groupadd -r notebooklm && useradd -r -g notebooklm -d /home/notebooklm notebooklm \
     && mkdir -p /home/notebooklm /app /data \
-    && chown -R notebooklm:notebooklm /home/notebooklm /app /data
+    && chown -R notebooklm:notebooklm /home/notebooklm /app /data \
+    # Create X11 socket directory with proper permissions for Xvfb
+    && mkdir -p /tmp/.X11-unix \
+    && chmod 1777 /tmp/.X11-unix
 
 # Set working directory
 WORKDIR /app

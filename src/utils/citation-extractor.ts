@@ -66,36 +66,40 @@ export interface CitationExtractionResult {
 
 /**
  * Selectors to find citation markers in the response
- * NotebookLM typically uses superscript numbers or bracketed references
+ * NotebookLM uses button.citation-marker with aria-label containing source text
+ * Updated January 2026 based on actual NotebookLM DOM structure
  */
 const CITATION_SELECTORS = [
-  // Primary: Citation links/buttons
-  '.citation-link',
+  // PRIMARY: NotebookLM citation buttons (January 2026)
+  'button.citation-marker',
+  'button.xap-inline-dialog.citation-marker',
+  // Fallback selectors
   '.citation-marker',
   '[data-citation]',
   '[data-citation-id]',
+  // Legacy selectors (kept for backwards compatibility)
+  '.citation-link',
   '[data-source-id]',
-  // Superscript numbers
   'sup.citation',
   'sup[data-citation]',
-  'sup a',
-  // Bracketed references [1], [2]
   '.reference-marker',
   '[role="button"][aria-label*="citation"]',
   '[role="button"][aria-label*="source"]',
-  // NotebookLM specific (may need adjustment based on actual DOM)
   '.source-citation',
   '.inline-citation',
   'button.citation',
-  // Generic clickable citations
-  '[class*="citation"]',
   '[class*="source-ref"]',
 ];
 
 /**
  * Selectors for the tooltip/popover that appears on hover
+ * Updated January 2026: NotebookLM uses i.highlighted for source text
  */
 const TOOLTIP_SELECTORS = [
+  // PRIMARY: NotebookLM source highlight (January 2026)
+  'i.highlighted',
+  '.paragraph i.highlighted',
+  '.paragraph.normal i.highlighted',
   // Common tooltip patterns
   '[role="tooltip"]',
   '.tooltip',
@@ -168,20 +172,23 @@ export async function extractCitations(
 
     log.info(`📚 [CITATIONS] Found ${citationElements.length} citation markers`);
 
-    // Extract source text for each citation via hover
+    // Extract source info for each citation (name from aria-label, text from hover)
     for (const { element, marker, number } of citationElements) {
       try {
-        const sourceText = await extractSourceViaHover(page, element);
+        const extracted = await extractSourceFromElement(page, element);
 
-        if (sourceText) {
+        if (extracted.sourceText || extracted.sourceName) {
           citations.push({
             marker,
             number,
-            sourceText,
+            sourceText: extracted.sourceText || extracted.sourceName || '',
+            sourceName: extracted.sourceName || undefined,
           });
-          log.success(`  ✅ [${marker}] Extracted: "${sourceText.substring(0, 50)}..."`);
+          log.success(
+            `  ✅ [${marker}] Extracted: "${(extracted.sourceText || extracted.sourceName || '').substring(0, 50)}..."`
+          );
         } else {
-          log.warning(`  ⚠️  [${marker}] Could not extract source text`);
+          log.warning(`  ⚠️  [${marker}] Could not extract source info`);
         }
       } catch (error) {
         log.warning(`  ⚠️  [${marker}] Error extracting: ${error}`);
@@ -423,18 +430,49 @@ async function findCitationsByRegex(
 }
 
 /**
- * Extract source text by hovering over a citation element
+ * Result of extracting source information from a citation element
  */
-async function extractSourceViaHover(page: Page, element: ElementHandle): Promise<string | null> {
+interface ExtractedSource {
+  /** Source document name (from aria-label) */
+  sourceName: string | null;
+  /** Source text excerpt (from hover tooltip) */
+  sourceText: string | null;
+}
+
+/**
+ * Extract source information from citation element
+ *
+ * NotebookLM (January 2026):
+ * - aria-label contains source document name: "17: Filename.pdf"
+ * - hover shows excerpt in i.highlighted element
+ */
+async function extractSourceFromElement(
+  page: Page,
+  element: ElementHandle
+): Promise<ExtractedSource> {
+  const result: ExtractedSource = { sourceName: null, sourceText: null };
+
   try {
-    // Scroll element into view
+    // Step 1: Extract source name from aria-label
+    const spanWithLabel = await element.$('span[aria-label]');
+    if (spanWithLabel) {
+      const ariaLabel = await spanWithLabel.getAttribute('aria-label');
+      if (ariaLabel) {
+        // Parse format "17: Source Name.pdf"
+        const colonIndex = ariaLabel.indexOf(': ');
+        if (colonIndex > 0) {
+          result.sourceName = ariaLabel.substring(colonIndex + 2).trim();
+        } else {
+          result.sourceName = ariaLabel.trim();
+        }
+        log.info(`  📄 Source name: "${result.sourceName?.substring(0, 50)}..."`);
+      }
+    }
+
+    // Step 2: Hover to extract text excerpt
     await element.scrollIntoViewIfNeeded();
     await randomDelay(50, 100);
-
-    // Hover over the element
     await element.hover();
-
-    // Wait for tooltip to appear
     await randomDelay(300, 500);
 
     // Try to find and read the tooltip content
@@ -446,10 +484,11 @@ async function extractSourceViaHover(page: Page, element: ElementHandle): Promis
           if (isVisible) {
             const text = await tooltip.innerText();
             if (text && text.trim()) {
-              // Move mouse away to dismiss tooltip
+              result.sourceText = text.trim();
+              log.info(`  📖 Source text: "${result.sourceText.substring(0, 50)}..."`);
               await page.mouse.move(0, 0);
               await randomDelay(100, 150);
-              return text.trim();
+              return result;
             }
           }
         }
@@ -466,8 +505,9 @@ async function extractSourceViaHover(page: Page, element: ElementHandle): Promis
         if (tooltipById) {
           const text = await tooltipById.innerText();
           if (text && text.trim()) {
+            result.sourceText = text.trim();
             await page.mouse.move(0, 0);
-            return text.trim();
+            return result;
           }
         }
       }
@@ -477,10 +517,10 @@ async function extractSourceViaHover(page: Page, element: ElementHandle): Promis
 
     // Move mouse away even if we didn't find content
     await page.mouse.move(0, 0);
-    return null;
+    return result;
   } catch (error) {
-    log.warning(`⚠️  [CITATIONS] Hover extraction failed: ${error}`);
-    return null;
+    log.warning(`⚠️  [CITATIONS] Extraction failed: ${error}`);
+    return result;
   }
 }
 

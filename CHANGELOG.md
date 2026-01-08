@@ -7,6 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.5.4] - 2026-01-07
+
+### Fixed
+
+**Citation Source Format (Critical Bug):**
+
+- Fixed `source_format` parameter not being passed from HTTP `/ask` endpoint to handler
+- The parameter was defined in the schema but never extracted from `req.body` in `http-wrapper.ts`
+- All source formats now work correctly: `none`, `inline`, `footnotes`, `json`, `expanded`
+
+**Citation Extraction:**
+
+- Updated `CITATION_SELECTORS` for current NotebookLM DOM (January 2026):
+  - Primary: `button.citation-marker`, `button.xap-inline-dialog.citation-marker`
+  - Fallback selectors for backwards compatibility
+- Updated `TOOLTIP_SELECTORS` for source text extraction:
+  - Primary: `i.highlighted`, `.paragraph i.highlighted`
+- New `extractSourceFromElement()` function extracts both:
+  - `sourceName`: from `aria-label` attribute (e.g., "17: Filename.pdf")
+  - `sourceText`: from hover tooltip content
+
+**Docker/noVNC:**
+
+- Fixed Xvfb startup error: `_XSERVTransmkdir: ERROR: euid != 0`
+- Added `/tmp/.X11-unix` directory creation with proper permissions (1777) in Dockerfile
+- Changed exposed port from 5900 (raw VNC) to 6080 (noVNC web interface) in docker-compose.yml
+
+### Added
+
+- E2E tests for `source_format` parameter: `[T15]`, `[T16]`, `[T17]` in `tests/e2e/tests/03-ask.test.ts`
+
+---
+
 ## [1.5.3] - 2026-01-05
 
 ### Added

@@ -87,7 +87,8 @@ app.get('/health', async (_req: Request, res: Response) => {
 app.post('/ask', async (req: Request, res: Response) => {
   const reqId = req.requestId.substring(0, 8); // Short ID for logs
   try {
-    const { question, session_id, notebook_id, notebook_url, show_browser } = req.body;
+    const { question, session_id, notebook_id, notebook_url, show_browser, source_format } =
+      req.body;
 
     if (!question) {
       log.warning(`[${reqId}] /ask - Missing question`);
@@ -100,7 +101,7 @@ app.post('/ask', async (req: Request, res: Response) => {
     log.info(`[${reqId}] /ask - "${question.substring(0, 50)}..."`);
 
     const result = await toolHandlers.handleAskQuestion(
-      { question, session_id, notebook_id, notebook_url, show_browser },
+      { question, session_id, notebook_id, notebook_url, show_browser, source_format },
       async (message, progress, total) => {
         log.info(`[${reqId}] Progress: ${message} (${progress}/${total})`);
       }

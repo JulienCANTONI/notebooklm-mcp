@@ -18,7 +18,7 @@ services:
     # Port mapping
     ports:
       - '${HTTP_PORT:-3000}:3000'
-      - '5900:5900' # VNC for visual auth
+      - '6080:6080' # noVNC web interface for visual auth
 
     # Persistent data storage
     volumes:

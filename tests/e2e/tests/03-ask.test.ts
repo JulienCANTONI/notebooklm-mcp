@@ -102,4 +102,65 @@ describe('03 - Ask Question (Core Q&A)', () => {
     },
     TIMEOUT
   );
+
+  it(
+    '[T15] Should format sources inline when source_format=inline',
+    async () => {
+      if (!isAuthenticated) return;
+
+      const result = await httpRequest('/ask', 'POST', {
+        question: 'Give me a definition with sources.',
+        notebook_url: E2E_NOTEBOOK_URL,
+        source_format: 'inline',
+      });
+
+      expect(result.success).toBe(true);
+      const data = result.data as { answer: string };
+      expect(data.answer).toBeTruthy();
+      // Inline format should have [N: "source text"] pattern
+      expect(data.answer).toMatch(/\[\d+:\s*"[^"]+"\]/);
+    },
+    TIMEOUT
+  );
+
+  it(
+    '[T16] Should format sources as footnotes when source_format=footnotes',
+    async () => {
+      if (!isAuthenticated) return;
+
+      const result = await httpRequest('/ask', 'POST', {
+        question: 'Give me a definition with sources.',
+        notebook_url: E2E_NOTEBOOK_URL,
+        source_format: 'footnotes',
+      });
+
+      expect(result.success).toBe(true);
+      const data = result.data as { answer: string };
+      expect(data.answer).toBeTruthy();
+      // Footnotes format should have "Sources:" section at the end
+      expect(data.answer).toMatch(/---\s*\n\*\*Sources:\*\*/);
+    },
+    TIMEOUT
+  );
+
+  it(
+    '[T17] Should return citation data when source_format=json',
+    async () => {
+      if (!isAuthenticated) return;
+
+      const result = await httpRequest('/ask', 'POST', {
+        question: 'Give me a definition with sources.',
+        notebook_url: E2E_NOTEBOOK_URL,
+        source_format: 'json',
+      });
+
+      expect(result.success).toBe(true);
+      const data = result.data as { answer: string; citation_result?: { citations: unknown[] } };
+      expect(data.answer).toBeTruthy();
+      // JSON format should include citation_result object
+      expect(data.citation_result).toBeDefined();
+      expect(Array.isArray(data.citation_result?.citations)).toBe(true);
+    },
+    TIMEOUT
+  );
 });
