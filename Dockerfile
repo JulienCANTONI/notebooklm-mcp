@@ -69,6 +69,7 @@ RUN npm ci --omit=dev --ignore-scripts
 RUN npx patchright install chromium
 
 # Copy built application and scripts
+RUN npm run build
 COPY --chown=notebooklm:notebooklm dist/ ./dist/
 COPY --chown=notebooklm:notebooklm scripts/ ./scripts/
 COPY --chown=notebooklm:notebooklm package.json ./
